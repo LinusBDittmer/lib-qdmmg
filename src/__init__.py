@@ -1,9 +1,0 @@
-'''
-
-INITIALISATION FILE FOR THE LIB-QDMMG LIBRARY
-
-'''
-
-
-__version__ = '0.1'
-

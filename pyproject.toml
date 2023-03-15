@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lib-qdmmg"
+version = "0.0.1"
+authors = [
+  { name="Linus Bjarne Dittmer", email="iu254@stud.uni-heidelberg.de" },
+  { name="Oriol Vendrell", email="oriol.vendrell@pci.uni-heidelberg.de"}
+]
+description = "A Python implementation for the Matching Marching Gaussians Quantum Dynamics (QD-MMG) algorithm"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/LinusBDittmer/lib-qdmmg"
