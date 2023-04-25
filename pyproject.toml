@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lib-qdmmg"
+name = "libqdmmg"
 version = "0.0.1"
 authors = [
   { name="Linus Bjarne Dittmer", email="iu254@stud.uni-heidelberg.de" },
