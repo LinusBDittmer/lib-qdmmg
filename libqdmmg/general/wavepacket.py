@@ -10,8 +10,8 @@ class Wavepacket:
 
     def __init__(self, sim, g1):
         self.sim = sim
-        self.gaussians = [g1]
-        self.gauss_coeff = numpy.ones(1, dtype=numpy.float32)
+        self.gaussians = []
+        self.gauss_coeff = numpy.array([])
         self.logger = sim.logger
 
     def bindGaussian(self, g1, coeff):
