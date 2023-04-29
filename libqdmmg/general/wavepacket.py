@@ -8,7 +8,7 @@ import numpy
 
 class Wavepacket:
 
-    def __init__(self, sim, g1):
+    def __init__(self, sim):
         self.sim = sim
         self.gaussians = []
         self.gauss_coeff = numpy.array([])
@@ -20,7 +20,11 @@ class Wavepacket:
             coeff = abs(coeff)
             self.logger.warn("Significant complex phase in coefficient detected. Phase should be exported to basis and coeffs kept real. Phase is discarded.")
         self.gauss_coeff = numpy.append(self.gauss_coeff, coeff.real)
-        self.gauss_coeff /= numpy.linalg.norm(self.gauss_coeff)
+        for t, coeff in enumerate(self.gauss_coeff.T):
+            self.gauss_coeff[:,t] /= numpy.linalg.norm(coeff)
 
+
+    def getCoeffs(self, t):
+        return self.gauss_coeff[:,t].T
 
 

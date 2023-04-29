@@ -5,6 +5,7 @@ Container for General Gaussian used for wavepacket propagation
 '''
 
 import numpy
+import copy
 from functools import reduce
 
 class Gaussian:
@@ -21,7 +22,7 @@ class Gaussian:
         self.width = numpy.ones(sim.dim)
         self.phase[0] = phase
         self.logger = sim.logger
-        self.v_amp = -1.0
+        self.v_amp = -numpy.ones(tsteps)
 
         if type(centre) is numpy.ndarray:
             self.centre[0] = centre
@@ -48,11 +49,11 @@ class Gaussian:
         return 2 * numpy.pi**(-self.sim.dim * 0.5) * numpy.linalg.norm(self.width)**(self.sim.dim * 0.5)
 
     def v_amplitde(self, t, index):
-        if self.v_amp < 0:
+        if self.v_amp[t] < 0:
             w_prod = reduce(numpy.prod, self.width)
             ep = reduce(numpy.dot, (self.width, self.centre[t]*self.centre[t]))
-            self.v_amp = 2 * self.width[0] * numpy.pi(-self.sim.dim*0.5) * w_prod**0.5 * numpy.exp(2 * ep)
-        return self.width[index] / self.width[0] * self.v_amp
+            self.v_amp[t] = 2 * self.width[0] * numpy.pi(-self.sim.dim*0.5) * w_prod**0.5 * numpy.exp(2 * ep)
+        return self.width[index] / self.width[0] * self.v_amp[t]
 
 
     def step_forward(self):
@@ -65,4 +66,14 @@ class Gaussian:
             self.momentum[t+1] = self.momentum[t-1] + 2 * sim.tstep_val * self.d_momentum[t]
             self.phase[t+1] = self.phase[t-1] + 2 * sim.tstep_val * self.d_phase[t]
 
-
+    def copy(self):
+        g = Gaussian(self.sim)
+        g.centre = numpy.copy(self.centre)
+        g.d_centre = numpy.copy(self.d_centre)
+        g.momentum = numpy.copy(self.momentum)
+        g.d_momentum = numpy.copy(self.d_momentum)
+        g.phase = numpy.copy(self.phase)
+        g.d_phase = numpy.copy(self.d_phase)
+        g.v_amp = numpy.copy(self.v_amp)
+        g.width = numpy.copy(self.width)
+        return g

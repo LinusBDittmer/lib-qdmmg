@@ -32,3 +32,28 @@ class Simulation:
         self.active_gaussian.step_forward()
         self.t += 1
 
+
+    def run_timesteps(self, isInitial=False):
+        # Main timestepping loop for adding gaussians
+        pass
+
+    def gen_wavefunction(self):
+        # Main executable function for generation of the final wavefunction
+
+        # Generate first gaussian
+        self.active_gaussian = gen.Gaussian(self)
+        # Timestepping
+        self.run_timesteps(isInitial=True)
+        # Binding first gaussian to wavepackt
+        self.previous_wavefunction = gen.Wavepacket(self)
+        self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
+
+        for generation in range(generations):
+            # Generate next gaussian
+            self.active_gaussian = gen.Gaussian(self)
+            # Timestepping
+            self.run_timesteps()
+            # Binding new gaussian
+            self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
+            # Check convergence
+        
