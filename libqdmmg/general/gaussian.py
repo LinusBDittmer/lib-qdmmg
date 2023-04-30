@@ -121,7 +121,7 @@ class Gaussian:
 
         '''
         # y' = y * (-2a(x-c) + p)
-        y = self.evaluate(x, t, is_index)
+        y = self.evaluate(x, t)
         return y * reduce(numpy.add, (-2*reduce(numpy.multiply, (self.width, x-self.centre[t])), 1j*self.momentum[t]))
 
     def evaluateU(self, x, t):
@@ -225,9 +225,9 @@ class Gaussian:
             self.momentum[1] = self.momentum[0] + self.sim.tstep_val * self.d_momentum[0]
             self.phase[1] = self.phase[0] + self.sim.tstep_val * self.d_phase[0]
         else:
-            self.centre[t+1] = self.centre[t-1] + 2 * sim.tstep_val * self.d_centre[t]
-            self.momentum[t+1] = self.momentum[t-1] + 2 * sim.tstep_val * self.d_momentum[t]
-            self.phase[t+1] = self.phase[t-1] + 2 * sim.tstep_val * self.d_phase[t]
+            self.centre[t+1] = self.centre[t-1] + 2 * self.sim.tstep_val * self.d_centre[t]
+            self.momentum[t+1] = self.momentum[t-1] + 2 * self.sim.tstep_val * self.d_momentum[t]
+            self.phase[t+1] = self.phase[t-1] + 2 * self.sim.tstep_val * self.d_phase[t]
 
     def copy(self):
         '''

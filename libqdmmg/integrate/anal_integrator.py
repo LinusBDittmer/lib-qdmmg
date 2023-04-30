@@ -93,8 +93,8 @@ def int_ux2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
 
 def int_ux2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
     c = numpy.linalg.norm(g1width) - g1width[index]
-    c_inv = 1.0 / (c + g2width[index1])
-    p = 2*c1*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
+    c_inv = 1.0 / (c + g2width[index])
+    p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
         m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
     return (0.25*p*p*c*c + 0.5*c) * m
@@ -112,8 +112,8 @@ def int_ux3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
 
 def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
     c = numpy.linalg.norm(g1width) - g1width[index]
-    c_inv = 1.0 / (c + g2width[index1])
-    p = 2*c1*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
+    c_inv = 1.0 / (c + g2width[index])
+    p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
         m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
     return 0.25 * (3*p*c_inv*c_inv + 0.5 * p*p*p*c_inv*c_inv*c_inv) * m
