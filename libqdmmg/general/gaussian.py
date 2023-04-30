@@ -60,7 +60,7 @@ class Gaussian:
         phase : float, optional
             Initial equivalent phase. The actual initial phase is given by 1j*phase. Default is 0.
         '''
-        
+        tsteps = sim.tsteps 
         self.sim = sim
         self.centre = numpy.zeros((tsteps, sim.dim))
         self.d_centre = numpy.zeros(self.centre.shape)
@@ -219,7 +219,8 @@ class Gaussian:
         Except for the first timestep, in which the usual explicit time-integration scheme is used.
 
         '''
-        if self.sim.t == 0:
+        t = self.sim.t
+        if t == 0:
             self.centre[1] = self.centre[0] + self.sim.tstep_val * self.d_centre[0]
             self.momentum[1] = self.momentum[0] + self.sim.tstep_val * self.d_momentum[0]
             self.phase[1] = self.phase[0] + self.sim.tstep_val * self.d_phase[0]

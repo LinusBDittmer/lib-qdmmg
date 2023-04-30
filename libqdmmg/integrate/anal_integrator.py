@@ -38,9 +38,9 @@ def int_gx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     return (0.25 * v1 * v2 * c1 * c2 + 0.5 * c1 + 0.5 * c2) * m
 
 def int_gx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
-   v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
-   c = 1.0 / (g1width[index] + g2width[index])
-   if not useM:
+    v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
+    c = 1.0 / (g1width[index] + g2width[index])
+    if not useM:
        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
     return (0.25 * v * v * c * c + 0.5 * c) * m
 

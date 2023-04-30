@@ -39,7 +39,7 @@ class GridPotential(Potential):
             return False
         gridpoints = gridfile_dict[keyset_c[keyset.index('reduced_mass')]]
         g_keyset = [k.lower() for k in gridpoints]
-        g_keyset_c = [k for k in gripdoints]
+        g_keyset_c = [k for k in gridpoints]
         if not 'data' in g_keyset:
             return False
         if not len(gridpoints[g_keyset_c[g_keyset.index('data')]]) % 2 == 0:
@@ -75,7 +75,7 @@ class GridPotentialIntegrator(PotentialIntegrator):
 
     def __init__(self, potential, resolution):
         super().__init__(potential)
-        assert isinstance(self.potential, GridPotential), f"Grid Potential Integrator is only for Grid Potentials or inheriting classes. Received class of type {type(pot)}"
+        assert isinstance(self.potential, GridPotential), f"Grid Potential Integrator is only for Grid Potentials or inheriting classes. Received class of type {type(potential)}"
         self.resolution = resolution
         self.num_intor = intor.NumericalIntegrator(self.potential.sim)
         self.num_intor.bind_potential(self.pot)

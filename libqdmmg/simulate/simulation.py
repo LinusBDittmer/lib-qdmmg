@@ -21,6 +21,7 @@ class Simulation:
         self.previous_wavefunction = None
         self.active_gaussian = None
         self.potential = None
+        self.generations = 1
 
     def bind_potential(self, potential):
         assert isinstance(potential, pot.potential.Potential), f"Expected Object of type or inheriting libqdmmg.potential.potential.Potential, received {type(potential)}"
@@ -54,7 +55,7 @@ class Simulation:
         self.previous_wavefunction = gen.Wavepacket(self)
         self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
 
-        for generation in range(generations):
+        for generation in range(self.generations):
             # Generate next gaussian
             self.active_gaussian = gen.Gaussian(self)
             # Timestepping
