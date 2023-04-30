@@ -13,39 +13,39 @@ class NumericalIntegrator:
     def __init__(self, sim):
         self.sim = sim
         self.grid = None
-        self.function = None
-        self.function2 = None
+        self.function = self.one
+        self.function2 = self.one
+        self.function3 = self.one
 
-    def bindGrid(self, grid):
+    def bind_grid(self, grid):
         self.grid = grid
 
-    def bindFunction(self, func):
+    def bind_function(self, func):
         self.function = func
 
-    def bindFunction2(self, func):
+    def bind_function2(self, func):
         self.function2 = func
 
-    def silenceFunction2(self):
-        self.function2 = self.one
+    def bind_function3(self, func):
+        self.function3 = func
+
+    def bind_potential(self, potential):
+        self.potential = potential
 
     def one(self, x, t):
         return 1.0
 
-    def gridEval(self, index, t):
-        # Note: index must have shape (1, dim)
+    def grid_eval(self, index, t):
         p = self.grid.gridpoint(index)
-        return self.function(p, t) * self.function2(p, t)
+        return self.function(p, t) * self.function2(p, t) * self.function3(p, t) * self.potential.evaluate(p)
 
     def integrate(self, t):
         assert self.grid is not None
-        #assert self.function is not None
-        if self.function2 is None:
-            self.silenceFunction2()
 
         index = numpy.zeros(self.sim.dim, dtype=numpy.int32)
         int_val = 0.0
         for indexnumber in range(self.grid.resolution**self.sim.dim):
-            int_val += self.gridEval(index, t) * self.grid.pointweight(index, t)
+            int_val += self.grid_eval(index, t) * self.grid.pointweight(index, t)
 
             index[0] += 1
             for i in range(self.sim.dim-1):
@@ -57,14 +57,6 @@ class NumericalIntegrator:
 
         return int_val
 
-class NumericalIntegrationCallable:
-
-    def __init__(self, sim):
-        self.sim = sim
-
-    def call(self, x, t):
-        return 1
-
 
 if __name__ == '__main__':
     import libqdmmg.simulate as sim
@@ -75,8 +67,8 @@ if __name__ == '__main__':
     gauss = gen.Gaussian(s)
     g.define_by_gaussian(gauss, 0)
     ni = NumericalIntegrator(s)
-    ni.bindGrid(g)
-    ni.bindFunction(gauss.evaluate)
+    ni.bind_grid(g)
+    ni.bind_function(gauss.evaluate)
     print(ni.integrate(0))
     print(numpy.pi**(1.5))
 

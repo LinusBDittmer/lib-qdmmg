@@ -5,7 +5,6 @@ Integration Package
 
 '''
 
-import libqdmmg.integrate.integrator as intor
 import libqdmmg.integrate.integral_request as int_req
 import libqdmmg.integrate.grid as grid
 import libqdmmg.integrate.numerical_integrator as num_intor
@@ -25,6 +24,4 @@ def Grid(sim, resolution):
 def NumericalIntegrator(sim):
     return num_intor.NumericalIntegrator(sim)
 
-def NumericalIntegrationCallable(sim):
-    return num_intor.NumericalIntegrationCallable(sim)
 

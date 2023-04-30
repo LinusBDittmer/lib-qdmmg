@@ -6,7 +6,7 @@ Central class for Lib-QDMMG
 '''
 
 import libqdmmg.general as gen
-
+import libqdmmg.potential as pot
 
 class Simulation:
 
@@ -20,6 +20,12 @@ class Simulation:
 
         self.previous_wavefunction = None
         self.active_gaussian = None
+        self.potential = None
+
+    def bind_potential(self, potential):
+        assert isinstance(potential, pot.potential.Potential), f"Expected Object of type or inheriting libqdmmg.potential.potential.Potential, received {type(potential)}"
+        self.potential = potential
+
 
     def step_forward(self):
         if not isinstance(self.previous_wavefunction, gen.wavepacket.Wavepacket):

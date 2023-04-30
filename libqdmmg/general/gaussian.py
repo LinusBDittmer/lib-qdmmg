@@ -45,6 +45,16 @@ class Gaussian:
         y = self.evaluate(x, t, is_index)
         return y * reduce(numpy.add, (-2*reduce(numpy.multiply, (self.width, x-self.centre[t])), 1j*self.momentum[t]))
 
+    def evaluateU(self, x, t):
+        xs = x - self.centre[t]
+        ep = - reduce(numpy.dot, (self.width, xs*xs))
+        return self.u_amplitude(t) * numpy.exp(ep)
+
+    def evaluateV(self, x, t):
+        xs = x + self.centre[t]
+        ep = - reduce(numpy.dot, (self.width, xs*xs))
+        return self.v_amplitude(t, 0) * numpy.exp(ep)
+
     def u_amplitude(self, t):
         return 2 * numpy.pi**(-self.sim.dim * 0.5) * numpy.linalg.norm(self.width)**(self.sim.dim * 0.5)
 
