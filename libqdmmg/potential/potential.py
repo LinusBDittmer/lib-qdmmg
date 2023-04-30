@@ -33,6 +33,18 @@ class PotentialIntegrator:
         self.potential = potential
         self.logger = potential.sim.logger
 
+    def int_request(self, request_string, *args, **kwargs):
+        rq = request_string.lower().strip()
+        if rq[0] == '_':
+            rq = rq[1:]
+        argnum = len(args)
+
+        assert argnum >= 3, f"Expected at least 3 arguments (g1, g2, t). Received {argnum}."
+
+        if rq == 'int_gVg':
+            return self._int_gVg(args)
+
+
     def _int_gVg(self, g1, g2, t):
         '''
         To be overridden
