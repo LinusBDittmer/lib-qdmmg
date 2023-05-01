@@ -201,6 +201,8 @@ class Gaussian:
             Ampliutde of the v dual function
 
         '''
+        t = int(t)
+        indx = int(index)
         if self.v_amp[t] < 0:
             w_prod = reduce(numpy.prod, self.width)
             ep = reduce(numpy.dot, (self.width, self.centre[t]*self.centre[t]))

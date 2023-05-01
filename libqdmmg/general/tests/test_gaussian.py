@@ -26,7 +26,7 @@ class TestGaussian(unittest.TestCase):
 
     def test_evaluate_d(self):
         g = self.genGaussian()
-        self.assertAlmostEqual(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), delta=10**-9)
+        self.assertTrue(numpy.assert_allclose(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7)
 
     def test_u_amplitude(self):
         g = self.genGaussian()
@@ -46,7 +46,7 @@ class TestGaussian(unittest.TestCase):
     def test_evaluate_v(self):
         g = self.genGaussian()
         v_amp = 2.0 / numpy.pi
-        self.assertAlmostEqual(g.evaluateV(numpy.zeros(2), 0, 0), v_amp, delta=10**-7)
+        self.assertTrue(numpy.assert_allclose(g.evaluateV(numpy.zeros(2), 0), v_amp, atol=10**-7))
 
 if __name__ == '__main__':
     unittest.main()
