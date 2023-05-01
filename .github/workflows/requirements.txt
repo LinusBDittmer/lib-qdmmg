@@ -1,0 +1,4 @@
+# Basic required packages
+numpy
+scipy
+mpi4py
