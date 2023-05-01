@@ -9,6 +9,7 @@ This class contains unittests to test the file
 '''
 
 import unittest
+import numpy
 import libqdmmg.general as gen
 import libqdmmg.simulate as sim
 
