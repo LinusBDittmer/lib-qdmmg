@@ -11,6 +11,9 @@ import libqdmmg.integrate as intor
 from libqdmmg.potential.potential import Potential, PotentialIntegrator
 
 class GridPotential(Potential):
+    '''
+    This class 
+    '''
 
     def __init__(self, sim, filename):
         super().__init__(sim)

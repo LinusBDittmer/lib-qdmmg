@@ -14,9 +14,9 @@ class InvalidIntegralRequestStringException(Exception):
 
     def __str__(self):
         a = ""
-        if int_class == 'elem':
+        if self.int_class == 'elem':
             a = "elementary "
-        elif int_class == 'comp':
+        elif self.int_class == 'comp':
             a = "composite "
         return f"The received integral request string is not a valid {a}integral descriptor." 
 
