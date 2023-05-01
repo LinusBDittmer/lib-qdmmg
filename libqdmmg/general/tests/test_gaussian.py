@@ -26,7 +26,7 @@ class TestGaussian(unittest.TestCase):
 
     def test_evaluate_d(self):
         g = self.genGaussian()
-        self.assertTrue(numpy.assert_allclose(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7)
+        self.assertTrue(numpy.assert_allclose(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7))
 
     def test_u_amplitude(self):
         g = self.genGaussian()
