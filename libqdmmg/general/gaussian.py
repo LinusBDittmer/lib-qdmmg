@@ -204,9 +204,9 @@ class Gaussian:
         t = int(t)
         indx = int(index)
         if self.v_amp[t] < 0:
-            w_prod = reduce(numpy.prod, self.width)
+            w_prod = numpy.prod(self.width, axis=0)
             ep = reduce(numpy.dot, (self.width, self.centre[t]*self.centre[t]))
-            self.v_amp[t] = 2 * self.width[0] * numpy.pi(-self.sim.dim*0.5) * w_prod**0.5 * numpy.exp(2 * ep)
+            self.v_amp[t] = 2 * self.width[0] * numpy.pi**(-self.sim.dim*0.5) * w_prod**0.5 * numpy.exp(2 * ep)
         return self.width[index] / self.width[0] * self.v_amp[t]
 
 
