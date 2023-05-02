@@ -16,8 +16,8 @@ def new_logger(sim):
 def Gaussian(sim, centre=None, width=None, momentum=None, phase=0.0):
     return gaussian.Gaussian(sim, centre=centre, width=width, momentum=momentum, phase=phase)
 
-def Wavepacket(sim, g1):
-    return wavepacket.Wavepacket(sim, g1)
+def Wavepacket(sim):
+    return wavepacket.Wavepacket(sim)
 
 def InvalidIntegralRequestStringException(rq, int_class, *args):
     return exceptions.InvalidIntegralRequestStringException(rq, int_class, args)

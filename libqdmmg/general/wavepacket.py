@@ -43,7 +43,7 @@ class Wavepacket:
         '''
         self.sim = sim
         self.gaussians = []
-        self.gauss_coeff = numpy.array([])
+        self.gauss_coeff = numpy.array([[]])
         self.logger = sim.logger
 
     def bindGaussian(self, g1, coeff):
@@ -60,13 +60,16 @@ class Wavepacket:
         '''
 
         self.gaussians.append(g1)
-        if abs(coeff.real - coeff) > 10**-3:
-            coeff = abs(coeff)
+        for i, c in enumerate(coeff):
+            if abs(c.real - c) > 10**-3:
+                coeff[i] = abs(c)
             self.logger.warn("Significant complex phase in coefficient detected. Phase should be exported to basis and coeffs kept real. Phase is discarded.")
-        self.gauss_coeff = numpy.append(self.gauss_coeff, coeff.real)
-        for t, coeff in enumerate(self.gauss_coeff.T):
-            self.gauss_coeff[:,t] /= numpy.linalg.norm(coeff)
-
+        if self.gauss_coeff.size == 0:
+            self.gauss_coeff = numpy.ones((1, self.sim.tsteps))
+        else:
+            self.gauss_coeff = numpy.append(self.gauss_coeff, numpy.array([coeff.real]), axis=0)
+            for t in range(self.sim.tsteps):
+                self.gauss_coeff[:,t] /= numpy.linalg.norm(self.gauss_coeff[:,t])
 
     def getCoeffs(self, t):
         '''
@@ -86,3 +89,34 @@ class Wavepacket:
         return self.gauss_coeff[:,t].T
 
 
+    def evaluate(self, x, t):
+        '''
+        Function for evaluating the wavepacket.
+
+        Parameters
+        ----------
+        x : 1D ndarray
+            Array with shape (dimensions,) holding the cartesian coordinates of the point.
+        t : int
+            Timestep index
+
+        Returns
+        -------
+        w_val : complex128
+            Value of the Wavepacket
+        '''
+        val = 0.0
+        for i, gauss in enumerate(self.gaussians):
+            val += self.gauss_coeff[i,t] * gauss.evaluate(x, t)
+        return val
+
+
+if __name__ == '__main__':
+    import libqdmmg.simulate as sim
+    import libqdmmg.general as gen
+    s = sim.Simulation(2, 1.0, dim=2)
+    g1 = gen.Gaussian(s)
+    g2 = gen.Gaussian(s, centre=numpy.array([0.0, 0.5]))
+    w = gen.Wavepacket(s)
+    w.bindGaussian(g1, numpy.array([1.0, 1.0]))
+    w.bindGaussian(g2, numpy.array([1.0, 0.5]))

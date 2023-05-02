@@ -14,40 +14,39 @@ import libqdmmg.general as gen
 import libqdmmg.simulate as sim
 
 class TestGaussian(unittest.TestCase):
-   
+  
+    def setUp(self):
+        self.g = self.genGaussian()
+
+    def tearDown(self):
+        del self.g
+
     def genGaussian(self, dim=2):
         s = sim.Simulation(2, 1.0, dim=dim)
         g = gen.Gaussian(s)
         return g
 
     def test_evaluate(self):
-        g = self.genGaussian()
-        self.assertAlmostEqual(g.evaluate(numpy.zeros(2), 0), 1.0, delta=10**-9)
+        self.assertAlmostEqual(self.g.evaluate(numpy.zeros(2), 0), 1.0, delta=10**-9)
 
     def test_evaluate_d(self):
-        g = self.genGaussian()
-        print(numpy.testing.assert_allclose(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7))
-        self.assertTrue(numpy.allclose(g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7))
+        self.assertTrue(numpy.allclose(self.g.evaluateD(numpy.zeros(2), 0), numpy.zeros(2), atol=10**-7))
 
     def test_u_amplitude(self):
-        g = self.genGaussian()
         u_amp = 2 * 2**0.5 / numpy.pi
-        self.assertAlmostEqual(g.u_amplitude(0), u_amp, delta=10**-7)
+        self.assertAlmostEqual(self.g.u_amplitude(0), u_amp, delta=10**-7)
 
     def test_v_amplitude(self):
-        g = self.genGaussian()
         v_amp = 2.0 / numpy.pi
-        self.assertAlmostEqual(g.v_amplitude(0, 0), v_amp, delta=10**-7)
+        self.assertAlmostEqual(self.g.v_amplitude(0, 0), v_amp, delta=10**-7)
 
     def test_evaluate_u(self):
-        g = self.genGaussian()
         u_amp = 2 * 2**0.5 / numpy.pi
-        self.assertAlmostEqual(float(g.evaluateU(numpy.zeros(2), 0)), u_amp, delta=10**-7)
+        self.assertAlmostEqual(float(self.g.evaluateU(numpy.zeros(2), 0)), u_amp, delta=10**-7)
 
     def test_evaluate_v(self):
-        g = self.genGaussian()
         v_amp = 2.0 / numpy.pi
-        self.assertTrue(numpy.allclose(g.evaluateV(numpy.zeros(2), 0), v_amp, atol=10**-7))
+        self.assertTrue(numpy.allclose(self.g.evaluateV(numpy.zeros(2), 0), v_amp, atol=10**-7))
 
 if __name__ == '__main__':
     unittest.main()
