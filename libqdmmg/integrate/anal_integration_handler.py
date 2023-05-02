@@ -27,7 +27,7 @@ def int_gg(g1, g2, t):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gg(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t])
+    return anal_intor.int_gg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]))
 
 def int_gxg(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -53,7 +53,7 @@ def int_gxg(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gxg(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_gxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 def int_gx2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -81,7 +81,7 @@ def int_gx2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gx2g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    return anal_intor.int_gx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index1, index2, m, useM)
 
 def int_gx2g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -107,7 +107,7 @@ def int_gx2g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gx2g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_gx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 def int_gx3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -135,7 +135,7 @@ def int_gx3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gx3g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    return anal_intor.int_gx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index1, index2, m, useM)
 
 def int_gx3g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -161,12 +161,12 @@ def int_gx3g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_gx3g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_gx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 
 def int_ug(g1, g2, t):
     '''
-    Calculates the integral of u1 * g2 over all of space, where u1 is the u dual function of g1.
+    Calculates the integral of u1 * g2 over all of space, where u1 is the u dual function of tuple(g1.
 
     Parameters
     ----------
@@ -182,11 +182,11 @@ def int_ug(g1, g2, t):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_ug(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t])
+    return anal_intor.int_ug(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]))
 
 def int_uxg(g1, g2, t, index, m=0.0, useM=False):
     '''
-    Calculates the integral of u1 * x_(index) * g2 over all of space, where u1 is the u dual function of g1.
+    Calculates the integral of u1 * x_(index) * g2 over all of space, where u1 is the u dual function of tuple(g1.
 
     Parameters
     ----------
@@ -208,11 +208,11 @@ def int_uxg(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_uxg(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_uxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 def int_ux2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
-    Calculates the integral of u1 * x_(index1) * x_(index2) * g2 over all of space, where u1 is the u dual function of g1. Note that index1 != index2, refer to int_ux2g_diag otherwise.
+    Calculates the integral of u1 * x_(index1) * x_(index2) * g2 over all of space, where u1 is the u dual function of tuple(g1. Note that index1 != index2, refer to int_ux2g_diag otherwise.
 
     Parameters
     ----------
@@ -234,11 +234,11 @@ def int_ux2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_ux2g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    return anal_intor.int_ux2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index1, index2, m, useM)
 
 def int_ux2g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
-    Calculates the integral of u1 * x_(index)^2 * g2 over all of space, where u1 is the u dual function of g1.
+    Calculates the integral of u1 * x_(index)^2 * g2 over all of space, where u1 is the u dual function of tuple(g1.
 
     Parameters
     ----------
@@ -260,11 +260,11 @@ def int_ux2g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_ux2g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_ux2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 def int_ux3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
-    Calculates the integral of u1 * x_(index1) * x_(index2)^2 * g2 over all of space, where u1 is the u dual function of g1.
+    Calculates the integral of u1 * x_(index1) * x_(index2)^2 * g2 over all of space, where u1 is the u dual function of tuple(g1.
 
     Parameters
     ----------
@@ -288,11 +288,11 @@ def int_ux3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_ux3g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    return anal_intor.int_ux3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index1, index2, m, useM)
 
 def int_ux3g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
-    Calculates the integral of u1 * x_(index)^3 * g2 over all of space, where u1 is the u dual function of g1.
+    Calculates the integral of u1 * x_(index)^3 * g2 over all of space, where u1 is the u dual function of tuple(g1.
 
     Parameters
     ----------
@@ -314,12 +314,12 @@ def int_ux3g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_ux3g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], index, m, useM)
+    return anal_intor.int_ux3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), index, m, useM)
 
 
 def int_vg(g1, g2, t, vindex):
     '''
-    Calculates the integral of v1_(vindex) * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index.
+    Calculates the integral of v1_(vindex) * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index.
 
     Parameters
     ----------
@@ -335,11 +335,11 @@ def int_vg(g1, g2, t, vindex):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vg(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex)
+    return anal_intor.int_vg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex)
 
 def int_vxg(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
-    Calculates the integral of v1_(vindex) * x_(index) * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index.
+    Calculates the integral of v1_(vindex) * x_(index) * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index.
 
     Parameters
     ----------
@@ -361,11 +361,11 @@ def int_vxg(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vxg(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    return anal_intor.int_vxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex, index, m, useM)
 
 def int_vx2g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     '''
-    Calculates the integral of v1_(vindex) * x_(index1) * x_(index2) * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index. Note that index1 != index2, refer to int_vx2g_diag otherwise.
+    Calculates the integral of v1_(vindex) * x_(index1) * x_(index2) * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index. Note that index1 != index2, refer to int_vx2g_diag otherwise.
 
     Parameters
     ----------
@@ -389,11 +389,11 @@ def int_vx2g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vx2g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    return anal_intor.int_vx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex, index1, index2, m, useM)
 
 def int_vx2g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
-    Calculates the integral of v1_(vindex) * x_(index)^2 * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index.
+    Calculates the integral of v1_(vindex) * x_(index)^2 * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index.
 
     Parameters
     ----------
@@ -415,11 +415,11 @@ def int_vx2g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vx2g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    return anal_intor.int_vx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex, index, m, useM)
 
 def int_vx3g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     '''
-    Calculates the integral of v1_(vindex) * x_(index1) * x_(index2)^2 * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index.
+    Calculates the integral of v1_(vindex) * x_(index1) * x_(index2)^2 * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index.
 
     Parameters
     ----------
@@ -443,11 +443,11 @@ def int_vx3g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vx3g_mixed(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    return anal_intor.int_vx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex, index1, index2, m, useM)
 
 def int_vx3g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
-    Calculates the integral of v1_(vindex) * x_(index)^3 * g2 over all of space, where v1 is the v dual function of g1 with vindex as direction index.
+    Calculates the integral of v1_(vindex) * x_(index)^3 * g2 over all of space, where v1 is the v dual function of tuple(g1.with vindex as direction index.
 
     Parameters
     ----------
@@ -469,7 +469,7 @@ def int_vx3g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return anal_intor.int_vx3g_diag(g1.width, g2.width, g1.centre[t], g2.centre[t], g1.momentum[t], g2.momentum[t], g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    return anal_intor.int_vx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), tuple(g1.phase[t]), tuple(g2.phase[t]), vindex, index, m, useM)
 
 
 

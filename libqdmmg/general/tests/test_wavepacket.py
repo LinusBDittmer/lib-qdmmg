@@ -4,7 +4,7 @@ author: Linus Bjarne Dittmer
 
 This class contains unittests to test the file
 
-    libqdmmg/general/gaussian.py
+    libqdmmg/general/wavepacket.py
 
 '''
 

@@ -142,7 +142,8 @@ class Gaussian:
 
         '''
         xs = x - self.centre[t]
-        ep = - reduce(numpy.dot, (self.width, xs*xs))
+        wa = numpy.linalg.norm(self.width) - self.width
+        ep = - reduce(numpy.dot, (wa, xs*xs))
         return self.u_amplitude(t) * numpy.exp(ep)
 
     def evaluateV(self, x, t):
