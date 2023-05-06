@@ -177,6 +177,51 @@ def int_gx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
     return (0.25 * v * v * c * c + 0.5 * c) * m
 
+def int_gx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, index3, m=0.0, useM=False):
+    '''
+    This function calculates the integral of the function g1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space. Note that index1 != index2 != index3 for this function, refer to int_gx3g_diag or int_gx3g_mixed otherwise.
+
+    Parameters
+    ----------
+    g1width : 1D ndarray
+        Width coefficients of the first Gaussian.
+    g2width : 1D ndarray
+        Width coefficients of the second Gaussian.
+    g1centre : 1D ndarray
+        Centre of the first Gaussian.
+    g2centre : 1D ndarray
+        Centre of the second Gaussian.
+    g1momentum : 1D ndarray
+        Equivalent momentum of the first Gaussian. Note that the actual momentum is given by 1j*g1momentum
+    g2momentum : 1D ndarray
+        Equivalent momentum of the second Gaussian. Note that the actual momentum is given by 1j*g2momentum
+    g1phase : float32
+        Equivalent phase of the first Gaussian. Note that the actual phase is given by 1j*g1phase
+    g2phase : float32
+        Equivalent phase of the second Gaussian. Note that the actual phase is given by 1j*g2phase
+    index1 : int
+        Index of the coordinate along which the first linear part of the cubic polynomial is constructed.
+    index2 : int
+        Index of the coordinate along which the second linear part of the cubic polynomial is constructed.
+    index3 : int
+        Index of the coordinate along which the third linear part of the cubic polynomial is constructed.
+    m : complex128, optional
+        Value of the integral of g1 * g2. Default 0.0
+    useM : bool, optional
+        Whether the value for m and thus the integral for g1 * g2 given as a parameter is to be used. If False, the value is recalculated. Default False
+
+    Returns
+    -------
+    integral : complex128
+        Integral of g1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space.
+
+    '''
+    v1 = (2 * g1width * g1centre + 2 * g2width * g2centre + 1j*(g2momentum - g1momentum)) / (g1width + g2width)
+    val = v1[index1] * v1[index2] * v1[index3]
+    if not useM:
+        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+    return 0.125 * v1 * m
+
 def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
     '''
     This function calculates the integral of the function g1 * x_(index1) * x_(index2)^2 * g2 over all of space. Note that index1 != index2 for this function, refer to int_gx3g_diag otherwise.
@@ -527,6 +572,51 @@ def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
         m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
     return 0.25 * (3*p*c_inv*c_inv + 0.5 * p*p*p*c_inv*c_inv*c_inv) * m
 
+def int_ux3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, index3, m=0.0, useM=False):
+    '''
+    This function calculates the integral of the function u1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space where u1 is the u dual function to g1. Note that index1 != index2 != index3, otherwise refer to int_ux3g_diag or int_ux3g_mixed.
+
+    Parameters
+    ----------
+    g1width : 1D ndarray
+        Width coefficients of the first Gaussian.
+    g2width : 1D ndarray
+        Width coefficients of the second Gaussian.
+    g1centre : 1D ndarray
+        Centre of the first Gaussian.
+    g2centre : 1D ndarray
+        Centre of the second Gaussian.
+    g1momentum : 1D ndarray
+        Equivalent momentum of the first Gaussian. Note that the actual momentum is given by 1j*g1momentum
+    g2momentum : 1D ndarray
+        Equivalent momentum of the second Gaussian. Note that the actual momentum is given by 1j*g2momentum
+    g1phase : float32
+        Equivalent phase of the first Gaussian. Note that the actual phase is given by 1j*g1phase
+    g2phase : float32
+        Equivalent phase of the second Gaussian. Note that the actual phase is given by 1j*g2phase
+    index1 : int
+        Index of the coordinate along which the first linear part of the cubic polynomial is constructed.
+    index2 : int
+        Index of the coordinate along which the second linear part of the cubic polynomial is constructed.
+    index3 : int
+        Index of the coordinate along which the third linear part of the cubic polynomial is constructed.
+    m : complex128, optional
+        Value of the integral of u1 * g2. Default 0.0
+    useM : bool, optional
+        Whether the value for m and thus the integral for u1 * g2 given as a parameter is to be used. If False, the value is recalculated. Default False
+
+
+    Returns
+    -------
+    integral : complex128
+        Integral of u1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space.
+
+    '''
+    v1 = (2 * numpy.linalg.norm(g1width) * g1centre - 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (numpy.linalg.norm(g1width) - g1width + g2width)
+    val = v1[index1] * v1[index2] * v1[index3]
+    if not useM:
+        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+    return 0.125 * v1 * m
 
 def int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex):
     '''
@@ -786,3 +876,10 @@ def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     if not useM:
         m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
     return 0.25 * (3*p*c_inv*c_inv + 0.5*p*p*p*c_inv*c_inv*c_inv) * m
+
+def int_vx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index1, index2, index3, m=0.0, useM=False):
+    v1 = (- 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (g1width + g2width)
+    val = v1[index1] * v1[index2] * v1[index3]
+    if not useM:
+        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+    return 0.125 * v1 * m

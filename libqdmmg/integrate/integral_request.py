@@ -4,10 +4,10 @@
 
 '''
 
-import libqdmmg.integrate.anal_integration_handler as anal_intor
+import libqdmmg.integrate.atom_integration_handler as atom_intor
 import libqdmmg.general as g
 
-ELEM_INTEGRALS = ['int_gg', 'int_gxg', 'int_gx2g', 'int_gx2g_m', 'int_gx2g_d', 'int_gx3g', 'int_gx3g_m', 'int_gx3g_d', 'int_ug', 'int_uxg', 'int_ux2g', 'int_ux2g_m', 'int_ux2g_d', 'int_ux3g', 'int_ux3g_m', 'int_ux3g_d', 'int_vg', 'int_vxg', 'int_vx2g', 'int_vx2g_m', 'int_vx2g_d', 'int_vx3g', 'int_vx3g_m', 'int_vx3g_d']
+ELEM_INTEGRALS = ['int_gg', 'int_gxg', 'int_gx2g', 'int_gx2g_m', 'int_gx2g_d', 'int_gx3g', 'int_gx3g_m', 'int_gx3g_d', 'int_gx3g_od', 'int_ug', 'int_uxg', 'int_ux2g', 'int_ux2g_m', 'int_ux2g_d', 'int_ux3g', 'int_ux3g_m', 'int_ux3g_d', 'int_ux3g_od', 'int_vg', 'int_vxg', 'int_vx2g', 'int_vx2g_m', 'int_vx2g_d', 'int_vx3g', 'int_vx3g_m', 'int_vx3g_d', 'int_vx3g_od']
 COMP_INTEGRALS = ['int_ovlp', 'int_ovlp_prev', 'int_dovlp', 'int_dovlp_prev', 'int_dovlp_prev2', 'int_dovlp_prevprev', 'int_kinetic', 'int_kinetic_prev', 'int_kinetic_coupling']
 
 
@@ -32,6 +32,7 @@ def int_request(sim, request_string, *args, **kwargs):
     int_gx3g
     int_gx3g_d
     int_gx3g_m
+    int_gx3g_od
     int_ug
     int_uxg
     int_ux2g
@@ -40,6 +41,7 @@ def int_request(sim, request_string, *args, **kwargs):
     int_ux3g
     int_ux3g_d
     int_ux3g_m
+    int_ux3g_od
     int_vg
     int_vxg
     int_vx2g
@@ -48,6 +50,7 @@ def int_request(sim, request_string, *args, **kwargs):
     int_vx3g
     int_vx3g_d
     int_vx3g_m
+    int_vx3g_od
 
 
     Parameters
@@ -74,7 +77,7 @@ def int_request(sim, request_string, *args, **kwargs):
     rq = request_string.strip().lower()
 
     if rq in ELEM_INTEGRALS:
-        return int_elem_request(request_string, args, kwargs)
+        return int_atom_request(request_string, args, kwargs)
     elif rq in COMP_INTEGRALS:
         return int_composite_request(sim, request_string, args, kwargs)
     else:
@@ -142,7 +145,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
 
 
 
-def int_elem_request(request_string, *args, **kwargs):
+def int_atom_request(request_string, *args, **kwargs):
     '''
     This function handles requests for analytical integral calculations of elementary integrals. The following request strings are allowed:
 
@@ -154,6 +157,7 @@ def int_elem_request(request_string, *args, **kwargs):
     int_gx3g
     int_gx3g_d
     int_gx3g_m
+    int_gx3g_od
     int_ug
     int_uxg
     int_ux2g
@@ -162,6 +166,7 @@ def int_elem_request(request_string, *args, **kwargs):
     int_ux3g
     int_ux3g_d
     int_ux3g_m
+    int_ux3g_od
     int_vg
     int_vxg
     int_vx2g
@@ -170,6 +175,7 @@ def int_elem_request(request_string, *args, **kwargs):
     int_vx3g
     int_vx3g_d
     int_vx3g_m
+    int_vx3g_od
 
     Parameters
     ----------
@@ -218,92 +224,128 @@ def int_elem_request(request_string, *args, **kwargs):
 
 
     if rq == 'int_gg':
-        return anal_intor.int_gg(g1, g2, t)
+        return atom_intor.int_gg(g1, g2, t)
     elif rq == 'int_gxg':
         assert argnum >= 4, f"Integrals of type gxg must have at least four arguments (g1, g2, t, index). Received {argnum}"
-        return anal_intor.int_gxg(g1, g2, t, args[3], kwargs)
+        return atom_intor.int_gxg(g1, g2, t, args[3], kwargs)
     elif rq == 'int_gx2g':
         assert argnum >= 4, f"Integrals of type gx2g and gx2g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
         if argnum >= 5:
             if args[3] != args[4]:
-                return anal_intor.int_gx2g_mixed(g1, g2, t, args[3], args[4], kwargs)
-        return anal_intor.int_gx2g_diag(g1, g2, t, args[3], kwargs)
+                return atom_intor.int_gx2g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_gx2g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_gx2g_d':
         assert argnum >= 4, f"Integrals of type gx2g and gx2g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        return anal_intor.int_gx2g_diag(g1, g2, t, args[3], kwargs)
+        return atom_intor.int_gx2g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_gx2g_m':
         assert argnum >= 5, f"Integrals of type gx2g_m must have at least five arguments (g1, g2, t, index1, index2), Received {argnum}"
-        return anal_intor.int_gx2g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_gx2g_mixed(g1, g2, t, args[3], args[4], kwargs)
     elif rq == 'int_gx3g':
         assert argnum >= 4, f"Integrals of type gx3g and gx3g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        if argnum >= 5:
+        if argnum >= 6:
+            if args[3] != args[4] and args[4] != args[5]:
+                return atom_intor.int_gx3g_offdiag(g1, g2, t, args[3], args[4], args[5], kwargs)
+            elif args[3] == args[4] and args[4] != args[5]:
+                return atom_intor.int_gx3g_mixed(g1, g2, t, args[5], args[3], kwargs)
+            elif args[3] == args[5] and args[3] != args[4]:
+                return atom_intor.int_gx3g_mixed(g1, g2, t, args[4], args[5], kwargs)
+            elif args[4] == args[5] and args[5] != args[3]:
+                return atom_intor.int_gx3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        if argnum == 5:
             if args[3] != args[4]:
-                return anal_intor.int_gx3g_mixed(g1, g2, t, args[3], args[4], kwargs)
-        return anal_intor.int_gx3g_diag(g1, g2, t, args[3], kwargs)
+                return atom_intor.int_gx3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_gx3g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_gx3g_d':
-        assert argnum >= 4, f"Integrals of type gx3g and gx3g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        return anal_intor.int_gx3g_diag(g1, g2, t, args[3], kwargs)
+        assert argnum >= 4, f"Integrals of type gx3g and gx3g_d must have at least four arguments (g1, g2, t, index1, [index2, index3]), Received {argnum}"
+        return atom_intor.int_gx3g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_gx3g_m':
         assert argnum >= 5, f"Integrals of type gx3g_m must have at least five arguments (g1, g2, t, index1, index2), Received {argnum}"
-        return anal_intor.int_gx3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_gx3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+    elif rq == 'int_gx3g_od':
+        assert argnum >= 6, f"Integrals of type gx3g_m must have at least five arguments (g1, g2, t, index1, index2, index3), Received {argnum}"
+        return atom_intor.int_gx3g_offdiag(g1, g2, t, args[3], args[4], args[5], kwargs)
     elif rq == 'int_ug':
-        return anal_intor.int_ug(g1, g2, t)
+        return atom_intor.int_ug(g1, g2, t)
     elif rq == 'int_uxg':
         assert argnum >= 4, f"Integrals of type uxg must have at least four arguments (g1, g2, t, index1), Received {argnum}"
-        return anal_intor.int_uxg(g1, g2, t, args[3], kwargs) 
+        return atom_intor.int_uxg(g1, g2, t, args[3], kwargs) 
     elif rq == 'int_ux2g':
         assert argnum >= 4, f"Integrals of type ux2g and ux2g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
         if argnum >= 5:
             if argnum[3] != argnum[4]:
-                return anal_intor.int_ux2g_mixed(g1, g2, t, args[3], args[4], kwargs)
-        return anal_intor.int_ux2g_diag(g1, g2, t, args[3], kwargs)
+                return atom_intor.int_ux2g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_ux2g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_ux2g_d':
         assert argnum >= 4, f"Integrals of type ux2g and ux2g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        return anal_intor.int_ux2g_diag(g1, g2, t, args[3], kwargs)
+        return atom_intor.int_ux2g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_ux2g_m':
         assert argnum >= 5, f"Integrals of type ux2g_m must have at least five arguments (g1, g2, t, index1, index2), Received {argnum}"
-        return anal_intor.int_ux2g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_ux2g_mixed(g1, g2, t, args[3], args[4], kwargs)
     elif rq == 'int_ux3g':
-        assert argnum >= 4, f"Integrals of type ux3g and ux3g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        if argnum >= 5:
+        assert argnum >= 4, f"Integrals of type ux3g and ux3g_d must have at least four arguments (g1, g2, t, index1, [index2, index3]), Received {argnum}"
+        if argnum >= 6:
+            if args[3] != args[4] and args[4] != args[5]:
+                return atom_intor.int_ux3g_offdiag(g1, g2, t, args[3], args[4], args[5], kwargs)
+            elif args[3] == args[4] and args[4] != args[5]:
+                return atom_intor.int_ux3g_mixed(g1, g2, t, args[5], args[3], kwargs)
+            elif args[3] == args[5] and args[3] != args[4]:
+                return atom_intor.int_ux3g_mixed(g1, g2, t, args[4], args[5], kwargs)
+            elif args[4] == args[5] and args[5] != args[3]:
+                return atom_intor.int_ux3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        if argnum == 5:
             if args[3] != args[4]:
-                return anal_intor.int_ux3g_mixed(g1, g2, t, args[3], args[4], kwargs)
-        return anal_intor.int_ux3g_diag(g1, g2, t, args[3], kwargs)
+                return atom_intor.int_ux3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_ux3g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_ux3g_d':
         assert argnum >= 4, f"Integrals of type ux3g and ux3g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
-        return anal_intor.int_ux3g_diag(g1, g2, t, args[3], kwargs)
+        return atom_intor.int_ux3g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_ux3g_m':
         assert argnum >= 5, f"Integrals of type ux3g_m must have at least five arguments (g1, g2, t, index1, index2), Received {argnum}"
-        return anal_intor.int_ux3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+        return atom_intor.int_ux3g_mixed(g1, g2, t, args[3], args[4], kwargs)
+    elif rq == 'int_ux3g_od':
+        assert argnum >= 6, f"Integrals of type ux3g_od must have at least six arguments (g1, g2, t, index1, index2, index3), Received {argnum}"
+        return atom_intor.int_ux3g_offdiag(g1, g2, t, args[3], args[4], args[5], kwargs)
     elif rq == 'int_vg':
-        return anal_intor.int_vg(g1, g2, t, vindex)
+        return atom_intor.int_vg(g1, g2, t, vindex)
     elif rq == 'int_vxg':
         assert argnum >= 5, f"Integrals of type vxg must have at least five arguments (g1, g2, t, vindex, index), Received {argnum}"
-        return anal_intor.int_vxg(g1, g2, t, vindex, args[4], kwargs)
+        return atom_intor.int_vxg(g1, g2, t, vindex, args[4], kwargs)
     elif rq == 'int_vx2g':
         assert argnum >= 5, f"Integrals of type vx2g and vx2g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
         if argnum >= 6:
             if args[4] != args[5]:
-                return anal_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
-        return anal_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
+                return atom_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
+        return atom_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
     elif rq == 'int_vx2g_d':
         assert argnum >= 5, f"Integrals of type vx2g and vx2g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
-        return anal_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], kwargs)
+        return atom_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], kwargs)
     elif rq == 'int_vx2g_m':
         assert argnum >= 6, f"Integrals of type vx2g_m must have at least six arguments (g1, g2, t, vindex, index1, index2), Received {argnum}"
-        return anal_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
+        return atom_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
     elif rq == 'int_vx3g':
         assert argnum >= 5, f"Integrals of type vx3g and vx3g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
-        if argnum >= 6:
+        if argnum >= 7:
+            if args[4] != args[5] and args[5] != args[6]:
+                return atom_intor.int_vx3g_offdiag(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
+            elif args[4] == args[5] and args[5] != args[6]:
+                return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[6], args[4], kwargs)
+            elif args[4] == args[6] and args[4] != args[5]:
+                return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[5], args[4], kwargs)
+            elif args[5] == args[6] and args[4] != args[6]:
+                return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
+        if argnum == 6:
             if args[4] != args[5]:
-                return anal_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
-        return anal_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
+                return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
+        return atom_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
     elif rq == 'int_vx3g_d':
-        assert argnum >= 5, f"Integrals of type vx3g and vx3g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
-        return anal_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
+        assert argnum >= 5, f"Integrals of type vx3g and vx3g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2, index3]), Received {argnum}"
+        return atom_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], kwargs)
     elif rq == 'int_vx3g_m':
         assert argnum >= 5, f"Integrals of type vx3g_m must have at least six arguments (g1, g2, t, vindex, index1, index2), Received {argnum}"
-        return anal_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], kwargs)
+        return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
+    elif rq == 'int_vx3g_od':
+        assert argnum >= 5, f"Integrals of type vx3g_m must have at least seven arguments (g1, g2, t, vindex, index1, index2, index3), Received {argnum}"
+        return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
     else:
         raise g.IIRSException(rq, "elem")
 
