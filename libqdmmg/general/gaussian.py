@@ -80,6 +80,15 @@ class Gaussian:
         if type(momentum) is numpy.ndarray:
             self.momentum[0] = momentum
 
+    def equals(self, other, t):
+        tol = 10**-2
+        if numpy.linalg.norm(self.centre[t] - other.centre[t]) > tol:
+            return False
+        if numpy.linalg.norm(self.momentum[t] - other.momentum[t]) > tol:
+            return False
+        if abs(self.phase[t] - other.phase[t]) > tol:
+            return False
+        return True
 
     def evaluate(self, x, t):
         '''
@@ -232,7 +241,7 @@ class Gaussian:
             self.momentum[t+1] = self.momentum[t-1] + 2 * self.sim.tstep_val * self.d_momentum[t]
             self.phase[t+1] = self.phase[t-1] + 2 * self.sim.tstep_val * self.d_phase[t]
 
-    def copy(self):
+    def copy(self, dephase=False):
         '''
         Creates a copy of the Gaussian function while keeping reference to the simulation and logger instance.
 
@@ -245,10 +254,11 @@ class Gaussian:
         g = Gaussian(self.sim)
         g.centre = numpy.copy(self.centre)
         g.d_centre = numpy.copy(self.d_centre)
-        g.momentum = numpy.copy(self.momentum)
+        g.momentum = numpy.copy(self.momentum) * (not dephase)
         g.d_momentum = numpy.copy(self.d_momentum)
-        g.phase = numpy.copy(self.phase)
+        g.phase = numpy.copy(self.phase) * (not dephase)
         g.d_phase = numpy.copy(self.d_phase)
         g.v_amp = numpy.copy(self.v_amp)
         g.width = numpy.copy(self.width)
         return g
+

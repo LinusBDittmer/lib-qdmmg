@@ -6,6 +6,7 @@
 
 import numpy
 import libqdmmg.general as g
+import libqdmmg.integrate as intor
 from functools import reduce
 
 class Potential:
@@ -50,6 +51,46 @@ class Potential:
         '''
         return 0
 
+    def gradient(self, x):
+        return self.num_gradient(x)
+
+    def hessian(self, x):
+        return self.num_hessian(x)
+
+    def num_gradient(self, x, epsilon=10**-5):
+        gradient = numpy.zeros(x.shape)
+        for i in range(self.sim.dim):
+            xp = numpy.copy(x)
+            xm = numpy.copy(x)
+            xp[i] += epsilon
+            xm[i] -= epsilon
+            gradient[i] = (self.evaluate(xp) - self.evaluate(xm)) / epsilon * 0.5
+        return gradient
+
+    def num_hessian(self, x):
+        hess = numpy.zeros((self.sim.dim, self.sim.dim))
+        for i in range(self.sim.dim):
+            for j in range(self.sim.dim):
+                if i > j: continue
+                xpp = numpy.copy(x)
+                xpm = numpy.copy(x)
+                xmp = numpy.copy(x)
+                xmm = numpy.copy(x)
+                xpp[i] += epsilon
+                xpp[j] += epsilon
+                xpm[i] += epsilon
+                xpm[j] -= epsilon
+                xmp[i] -= epsilon
+                xmp[j] += epsilon
+                xmm[i] -= epsilon
+                xmm[j] -= epsilon
+                hess[i,j] = (self.evaluate(xpp) - self.evaluate(xmp) - self.evaluate(xpm) + self.evaluate(xmm)) / epsilon**2 * 0.25
+        for i in range(self.sim.dim):
+            for j in range(self.sim.dim):
+                if i <= j: continue
+                hess[i,j] = hess[j,i]
+        return hess
+
     def gen_potential_integrator(self):
         '''
         === To be overriden. ===
@@ -93,29 +134,10 @@ class PotentialIntegrator:
         The interface method through which potential integrals are accessed. The provided request string is not case-sensitive and may include a leading backspace, without which it must be one of the following options:
 
         int_gVg
-        int_gVxg
-        int_gVx2g
-        int_gVx2g_m
-        int_gVx2g_d
-        int_gVx3g
-        int_gVx3g_m
-        int_gVx3g_d
         int_uVg
         int_uVxg
-        int_uVx2g
-        int_uVx2g_m
-        int_uVx2g_d
-        int_uVx3g
-        int_uVx3g_m
-        int_uVx3g_d
         int_vVg
         int_vVxg
-        int_vVx2g
-        int_vVx2g_m
-        int_vVx2g_d
-        int_vVx3g
-        int_vVx3g_m
-        int_vVx3g_d
 
         Parameters
         ----------
@@ -152,94 +174,17 @@ class PotentialIntegrator:
         elif rq == 'int_vvg':
             assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, vindex). Received {argnum}."
             return self._int_vVg(args)
-        elif rq == 'int_gvxg':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_gVxg(args, kwargs)
         elif rq == 'int_uvxg':
             assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
             return self._int_uVxg(args, kwargs)
         elif rq == 'int_vvxg':
             assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index). Received {argnum}."
             return self._int_vVxg(args, kwargs)
-        elif rq == 'int_gvx2g_m':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, index1, index2). Received {argnum}."
-            return self._int_gVx2g_mixed(args, kwargs)
-        elif rq == 'int_uvx2g_m':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, index1, index2). Received {argnum}."
-            return self._int_uVx2g_mixed(args, kwargs)
-        elif rq == 'int_vvx2g_m':
-            assert argnum >= 6, f"Expected at least 6 arguments (g1, g2, t, vindex, index1, index2). Received {argnum}."
-            return self._int_vVx2g_mixed(args, kwargs)
-        elif rq == 'int_gvx2g_d':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_gVx2g_diag(args, kwargs)
-        elif rq == 'int_uvx2g_d':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_uVx2g_diag(args, kwargs)
-        elif rq == 'int_vvx2g_d':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index). Received {argnum}."
-            return self._int_vVx2g_diag(args, kwargs)
-        elif rq == 'int_gvx3g_m':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, index1, index2). Received {argnum}."
-            return self._int_gVx3g_mixed(args, kwargs)    
-        elif rq == 'int_uvx3g_m':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, index1, index2). Received {argnum}."
-            return self._int_uVx3g_mixed(args, kwargs)
-        elif rq == 'int_vvx3g_m':
-            assert argnum >= 6, f"Expected at least 6 arguments (g1, g2, t, vindex, index1, index2). Received {argnum}."
-            return self._int_vVx3g_mixed(args, kwargs)
-        elif rq == 'int_gvx3g_d':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_gVx3g_diag(args, kwargs)
-        elif rq == 'int_uvx3g_d':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_uVx3g_diag(args, kwargs)
-        elif rq == 'int_vvx3g_d':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index). Received {argnum}."
-            return self._int_vVx3g_diag(args, kwargs)
-        elif rq == 'int_gvx2g':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index[, index2]). Received {argnum}."
-            if argnum >= 5:
-                if args[3] != args[4]:
-                    return self._int_gVx2g_mixed(args, kwargs)
-            return self._int_gVx2g_diag(args, kwargs)
-        elif rq == 'int_uvx2g':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index[, index2]). Received {argnum}."
-            if argnum >= 5:
-                if args[3] != args[4]:
-                    return self._int_uVx2g_mixed(args, kwargs)
-            return self._int_uVx2g_diag(args, kwargs)
-        elif rq == 'int_vvx2g':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index[, index2]). Received {argnum}."
-            if argnum >= 6:
-                if args[4] != args[5]:
-                    return self._int_vVx2g_mixed(args, kwargs)
-            return self._int_vVx2g_diag(args, kwargs)
-        elif rq == 'int_gvx3g':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index[, index2]). Received {argnum}."
-            if argnum >= 5:
-                if args[3] != args[4]:
-                    return self._int_gVx3g_mixed(args, kwargs)
-            return self._int_gVx3g_diag(args, kwargs)
-        elif rq == 'int_uvx3g':
-            assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index[, index2]). Received {argnum}."
-            if argnum >= 5:
-                if args[3] != args[4]:
-                    return self._int_uVx3g_mixed(args, kwargs)
-            return self._int_uVx3g_diag(args, kwargs)
-        elif rq == 'int_vvx3g':
-            assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index[, index2]). Received {argnum}."
-            if argnum >= 6:
-                if args[4] != args[5]:
-                    return self._int_vVx3g_mixed(args, kwargs)
-            return self._int_vVx3g_diag(args, kwargs)
         else:
             raise g.IIRSException(rq, "")
 
     def _int_gVg(self, g1, g2, t):
         '''
-        === To be overridden. ===
-
         Integral of the function g1 * V * g2.
 
         Parameters
@@ -256,136 +201,24 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        return 0
-
-    def _int_gVxg(self, g1, g2, t, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function g1 * V * x_(index) * g2.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            First gaussian.
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Second gaussian.
-        t : int
-            Timestep index.
-        index : int
-            Index of the direction in which the linear function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_gVx2g_mixed(self, g1, g2, t, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function g1 * V * x_(index1) * x_(index2) * g2. Note that index1 != index2, refer to _int_gVx2g_diag otherwise.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            First gaussian.
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Second gaussian.
-        t : int
-            Timestep index.
-        index1 : int
-            Index of the direction in which the first linear factor is constructed.
-        index2 : int
-            Index of the direction in which the second linear factor is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_gVx2g_diag(self, g1, g2, t, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function g1 * V * x_(index)^2 * g2.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            First gaussian.
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Second gaussian.
-        t : int
-            Timestep index.
-        index : int
-            Index of the direction in which the quadratic function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_gVx3g_mixed(self, g1, g2, t, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function g1 * V * x_(index1) * x_(index2)^2 * g2. Note that index1 != index2, refer to _int_gVx3g_diag otherwise.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            First gaussian.
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Second gaussian.
-        t : int
-            Timestep index.
-        index1 : int
-            Index of the direction in which the linear factor of the cubic polynomial is constructed.
-        index2 : int
-            Index of the direction in which the quadratic part of the cubic polynomial is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_gVx3g_diag(self, g1, g2, t, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function g1 * V * x_(index)^3 * g2.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            First gaussian.
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Second gaussian.
-        t : int
-            Timestep index.
-        index : int
-            Index of the direction in which the cubic function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
+        r_taylor = (g1.width * g1.centre + g2.width * g2.centre) / (g1.width + g2.width)
+        v_const = self.potential.evaluate(r_taylor)
+        grad = self.potential.gradient(r_taylor)
+        hess = self.potential.hessian(r_taylor)
+        gg = intor.int_request('int_gg', g1, g2, t)
+        v0 = v_const * gg
+        gxg = numpy.zeros(self.potential.sim.dim)
+        gx2g = numpy.zeros((self.potential.sim.dim, self.potential.sim.dim))
+        for i in range(len(gxg)):
+            gxg[i] = intor.int_request('int_gxg', g1, g2, t, i, m=gg, useM=True)
+            for j in range(len(gxg)):
+                gx2g[i,j] = intor.int_request('int_gx2g', g1, g2, t, i, j, m=gg, useM=True)
+        v1 = gxg - gg * r_taylor
+        v2 = gx2g - numpy.einsum('k,m->mk', r_taylor, gxg) - numpy.einsum('m,k->mk', r_taylor, gxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * gg
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
 
     def _int_uVg(self, g1, g2, t):
         '''
-        === To be overridden. ===
-
         Integral of the function u1 * V * g2. u1 is the u-dual function of the Gaussian g1.
 
         Parameters
@@ -406,8 +239,6 @@ class PotentialIntegrator:
 
     def _int_uVxg(self, g1, g2, t, index):
         '''
-        === To be overridden. ===
-
         Integral of the function u1 * V * x_(index) * g2. u1 is the u-dual function of the Gaussian g1.
 
         Parameters
@@ -428,110 +259,9 @@ class PotentialIntegrator:
         '''
         return 0
 
-    def _int_uVx2g_mixed(self, g1, g2, t, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function u1 * V * x_(index1) * x_(index2) * g2. u1 is the u-dual function of the Gaussian g1. Note that index1 != index2, refer to _int_uVx2g_diag otherwise.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose u-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        index1 : int
-            Index of the direction in which the first linear factor of the quadratic polynomial is constructed.
-        index2 : int
-            Index of the direction in which the second linear factor of the quadratic polynomial is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_uVx2g_diag(self, g1, g2, t, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function u1 * V * x_(index)^2 * g2. u1 is the u-dual function of the Gaussian g1.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose u-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        index : int
-            Index of the direction in which the quadratic function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_uVx3g_mixed(self, g1, g2, t, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function u1 * V * x_(index1) * x_(index2)^2 * g2. u1 is the u-dual function of the Gaussian g1. Note that index1 != index2, refer to _int_uVx3g_diag otherwise
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose u-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        index1 : int
-            Index of the direction in which the linear part of the cubic polynomial is constructed.
-        index2 : int
-            Index of the direction in which the quadratic part of the cubic polynomial is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_uVx3g_diag(self, g1, g2, t, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function u1 * V * x_(index)^3 * g2. u1 is the u-dual function of the Gaussian g1.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose u-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        index : int
-            Index of the direction in which the linear function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
+    
     def _int_vVg(self, g1, g2, t, vindex):
         '''
-        === To be overridden. ===
-
         Integral of the function v1 * V * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
 
         Parameters
@@ -554,8 +284,6 @@ class PotentialIntegrator:
 
     def _int_vVxg(self, g1, g2, t, vindex, index):
         '''
-        === To be overridden. ===
-
         Integral of the function v1 * V * x_(index) * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
 
         Parameters
@@ -577,115 +305,5 @@ class PotentialIntegrator:
             Integral value.
         '''
         return 0
-
-    def _int_vVx2g_mixed(self, g1, g2, t, vindex, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function v1 * V * x_(index1) * x_(index2) * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex. Note that index1 != index2, refer to _int_vVx2g_diag otherwise.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose v-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        vindex : int
-            Directional index of the v-dual function.
-        index1 : int
-            Index of the direction in which the first linear factor is constructed.
-        index2 : int
-            Index of the direction in which the second linear factor is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_vVx2g_diag(self, g1, g2, t, vindex, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function v1 * V * x_(index)^2 * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose v-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        vindex : int
-            Directional index of the v-dual function.
-        index : int
-            Index of the direction in which the quadratic function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_vVx3g_mixed(self, g1, g2, t, vindex, index1, index2):
-        '''
-        === To be overridden. ===
-
-        Integral of the function v1 * V * x_(index1) * x_(index2)^2 * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex. Note that index1 != index2, refer to _int_vVx3g_diag otherwise.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose v-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        vindex : int
-            Directional index of the v-dual function.
-        index1 : int
-            Index of the direction in which the linear part of the cubic polynomial is constructed.
-        index2 : int
-            Index of the direction in which the quadratic part of the cubic polynomial is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-    def _int_vVx3g_diag(self, g1, g2, t, vindex, index):
-        '''
-        === To be overridden. ===
-
-        Integral of the function v1 * V * x_(index)^3 * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
-
-        Parameters
-        ----------
-        g1 : libqdmmg.general.gaussian.Gaussian
-            Gaussian whose v-dual function is used in the integrand
-        g2 : libqdmmg.general.gaussian.Gaussian
-            Gaussian which is used directly in the integrand
-        t : int
-            Timestep index.
-        vindex : int
-            Directional index of the v-dual function.
-        index : int
-            Index of the direction in which the cubic function is constructed.
-
-        Returns
-        -------
-        int_val : complex128
-            Integral value.
-        '''
-        return 0
-
-
 
 
