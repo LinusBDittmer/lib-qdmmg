@@ -39,6 +39,12 @@ def int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
 
     '''
     # parallelise with OpenMP in C
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     cvec = g1width + g2width
     cvec_inv = 1 / cvec
     vvec = 2 * reduce(numpy.multiply, (g1width, g1centre)) + 2 * reduce(numpy.multiply, (g2width, g2centre)) + 1j*(g2momentum - g1momentum)
@@ -85,6 +91,12 @@ def int_gxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
 
     '''
     # parallelise with OpenMP in C
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     cval = g1width[index] + g2width[index]
     vval = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     if not useM:
@@ -128,6 +140,12 @@ def int_gx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
         Integral of g1 * x_(index1) * x_(index2) * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v1 = 2 * g1width[index1] * g1centre[index1] + 2 * g2width[index1] * g2centre[index1] + 1j*(g2momentum[index1] - g1momentum[index1])
     v2 = 2 * g1width[index2] * g1centre[index2] + 2 * g2width[index2] * g2centre[index2] + 1j*(g2momentum[index2] - g1momentum[index2])
     c1 = 1.0 / (g1width[index1] + g2width[index1])
@@ -171,6 +189,12 @@ def int_gx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
         Integral of g1 * x_(index)^2 * g2 over all of space.
     
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     c = 1.0 / (g1width[index] + g2width[index])
     if not useM:
@@ -216,11 +240,17 @@ def int_gx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentu
         Integral of g1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v1 = (2 * g1width * g1centre + 2 * g2width * g2centre + 1j*(g2momentum - g1momentum)) / (g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
         m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
-    return 0.125 * v1 * m
+    return 0.125 * val * m
 
 def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
     '''
@@ -259,6 +289,12 @@ def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
         Integral of g1 * x_(index1) * x_(index2)^2 * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v1 = 2 * g1width[index1] * g1centre[index1] + 2 * g2width[index1] * g2centre[index1] + 1j*(g2momentum[index1] - g1momentum[index1])
     v2 = 2 * g1width[index2] * g1centre[index2] + 2 * g2width[index2] * g2centre[index2] + 1j*(g2momentum[index2] - g1momentum[index2])
     c1 = 1.0 / (g1width[index1] + g2width[index1])
@@ -302,6 +338,12 @@ def int_gx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
         Integral of g1 * x_(index)^3 * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     c = 1.0 / (g1width[index] + g2width[index])
     if not useM:
@@ -337,6 +379,12 @@ def int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
     integral : complex128
         Integral of u1 * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     cvec2 = numpy.linalg.norm(g1width) - g1width
     cvec_inv = 1.0 / (cvec2 + g2width)
     vvec1_prec = 2 * cvec2 * g1centre + 2 * g2width * g2centre + 1j * g2momentum
@@ -344,7 +392,7 @@ def int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
     vvec2 = reduce(numpy.dot, (cvec2, g1centre*g1centre)) + reduce(numpy.dot, (g2width, g2centre*g2centre))
     ep = vvec1 - vvec2 + 1j * g2phase
     factor1 = numpy.sqrt(numpy.prod(cvec_inv))
-    return 2 * numpy.linalg.norm(g1width)**(len(g1width)*0.5) * factor1 * numpy.exp(ep)
+    return 2 * numpy.linalg.norm(g1width)**(len(g1width)*0.5+1) * factor1 * numpy.exp(ep)
 
 
 def int_uxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
@@ -383,6 +431,12 @@ def int_uxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
         Integral of u1 * x_(index) * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c2 = numpy.linalg.norm(g1width) - g1width[index]
     c_inv = 1.0 / (c2 + g2width[index])
     p = 2 * c2 * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j * g2momentum[index]
@@ -428,6 +482,12 @@ def int_ux2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
         Integral of u1 * x_(index1) * x_(index2) * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c1 = numpy.linalg.norm(g1width) - g1width[index1]
     c_inv1 = 1.0 / (c1 + g2width[index1])
     c2 = c1 + g1width[index1] - g1width[index2]
@@ -474,6 +534,12 @@ def int_ux2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
         Integral of u1 * x_(index)^2 * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c = numpy.linalg.norm(g1width) - g1width[index]
     c_inv = 1.0 / (c + g2width[index])
     p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
@@ -519,6 +585,12 @@ def int_ux3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
         Integral of u1 * x_(index1) * x_(index2)^2 * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c1 = numpy.linalg.norm(g1width) - g1width[index1]
     c_inv1 = 1.0 / (c1 + g2width[index1])
     c2 = c1 + g1width[index1] - g1width[index2]
@@ -565,6 +637,12 @@ def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
         Integral of u1 * x_(index)^3 * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c = numpy.linalg.norm(g1width) - g1width[index]
     c_inv = 1.0 / (c + g2width[index])
     p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
@@ -612,11 +690,17 @@ def int_ux3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentu
         Integral of u1 * x_(index1) * x_(index2) * x_(index3) * g2 over all of space.
 
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v1 = (2 * numpy.linalg.norm(g1width) * g1centre - 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (numpy.linalg.norm(g1width) - g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
         m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
-    return 0.125 * v1 * m
+    return 0.125 * val * m
 
 def int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex):
     '''
@@ -648,12 +732,18 @@ def int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
     integral : complex128
         Integral of v1_(vindex) * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     cvec_inv = 1.0 / (g1width + g2width)
     prefactor1 = numpy.sqrt(numpy.prod(g2width*cvec_inv))
     p = 2 * g2width * g2centre - 2 * g1width * g1centre + 1j * g2momentum
     ep1 = - reduce(numpy.dot, (g1width, g1centre*g1centre)) - reduce(numpy.dot, (g2width, g2centre*g2centre))
     ep2 = reduce(numpy.dot, (cvec_inv, p*p))
-    return 2 * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
+    return 2**(len(g1width)*0.5+2.5) * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
 
 def int_vxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index, m=0.0, useM=False):
     '''
@@ -692,6 +782,12 @@ def int_vxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
     integral : complex128
         Integral of v1_(vindex) * x_(index) * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j * g2momentum[index]
     if not useM:
@@ -736,6 +832,12 @@ def int_vx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     integral : complex128
         Integral of v1_(vindex) * x_(index1) * x_(index2) * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c_inv1 = 1.0 / (g1width[index1] + g2width[index1])
     c_inv2 = 1.0 / (g1width[index2] + g2width[index2])
     p1 = -2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
@@ -781,6 +883,12 @@ def int_vx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     integral : complex128
         Integral of v1_(vindex) * x_(index)^2 * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2*g1width[index]*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
@@ -826,6 +934,12 @@ def int_vx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     integral : complex128
         Integral of v1_(vindex) * x_(index1) * x_(index2)^2 * g2 over all of space.
     '''
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c_inv1 = 1.0 / (g1width[index1] + g2width[index1])
     c_inv2 = 1.0 / (g1width[index2] + g2width[index2])
     p1 = -2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
@@ -871,6 +985,12 @@ def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     integral : complex128
         Integral of v1_(vindex) * x_(index)^3 * g2 over all of space.
     ''' 
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2*g1width[index]*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
@@ -878,8 +998,14 @@ def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     return 0.25 * (3*p*c_inv*c_inv + 0.5*p*p*p*c_inv*c_inv*c_inv) * m
 
 def int_vx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index1, index2, index3, m=0.0, useM=False):
+    g1width = numpy.array(g1width)
+    g2width = numpy.array(g2width)
+    g1centre = numpy.array(g1centre)
+    g2centre = numpy.array(g2centre)
+    g1momentum = numpy.array(g1momentum)
+    g2momentum = numpy.array(g2momentum)
     v1 = (- 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
         m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
-    return 0.125 * v1 * m
+    return 0.125 * val * m

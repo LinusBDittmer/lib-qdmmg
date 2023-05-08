@@ -15,7 +15,7 @@ import numpy
 import scipy.integrate as si
 import libqdmmg.general as gen
 import libqdmmg.simulate as sim
-import libqdmmg.integrate.anal_integrator as intor
+import libqdmmg.integrate.atom_integrator as intor
 
 class TestGIntegrals(unittest.TestCase):
   

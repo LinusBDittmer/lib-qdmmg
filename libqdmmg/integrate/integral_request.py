@@ -222,7 +222,6 @@ def int_atom_request(request_string, *args, **kwargs):
         assert isinstance(args[3], int), f"Integrals of type v- must have vindex given as fourth argument. Received type {type(args[3])}"
         vindex = args[3]
 
-
     if rq == 'int_gg':
         return atom_intor.int_gg(g1, g2, t)
     elif rq == 'int_gxg':
@@ -272,7 +271,7 @@ def int_atom_request(request_string, *args, **kwargs):
     elif rq == 'int_ux2g':
         assert argnum >= 4, f"Integrals of type ux2g and ux2g_d must have at least four arguments (g1, g2, t, index1, [index2]), Received {argnum}"
         if argnum >= 5:
-            if argnum[3] != argnum[4]:
+            if args[3] != args[4]:
                 return atom_intor.int_ux2g_mixed(g1, g2, t, args[3], args[4], kwargs)
         return atom_intor.int_ux2g_diag(g1, g2, t, args[3], kwargs)
     elif rq == 'int_ux2g_d':
@@ -284,7 +283,7 @@ def int_atom_request(request_string, *args, **kwargs):
     elif rq == 'int_ux3g':
         assert argnum >= 4, f"Integrals of type ux3g and ux3g_d must have at least four arguments (g1, g2, t, index1, [index2, index3]), Received {argnum}"
         if argnum >= 6:
-            if args[3] != args[4] and args[4] != args[5]:
+            if args[3] != args[4] and args[4] != args[5] and args[3] != args[5]:
                 return atom_intor.int_ux3g_offdiag(g1, g2, t, args[3], args[4], args[5], kwargs)
             elif args[3] == args[4] and args[4] != args[5]:
                 return atom_intor.int_ux3g_mixed(g1, g2, t, args[5], args[3], kwargs)
@@ -323,7 +322,7 @@ def int_atom_request(request_string, *args, **kwargs):
         assert argnum >= 6, f"Integrals of type vx2g_m must have at least six arguments (g1, g2, t, vindex, index1, index2), Received {argnum}"
         return atom_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
     elif rq == 'int_vx3g':
-        assert argnum >= 5, f"Integrals of type vx3g and vx3g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
+        assert argnum >= 5, f"Integrals of type vx3g, vx3g_d or vx3g_od must have at least six arguments (g1, g2, t, vindex, index1, [index2, index3]), Received {argnum}"
         if argnum >= 7:
             if args[4] != args[5] and args[5] != args[6]:
                 return atom_intor.int_vx3g_offdiag(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
@@ -344,8 +343,8 @@ def int_atom_request(request_string, *args, **kwargs):
         assert argnum >= 5, f"Integrals of type vx3g_m must have at least six arguments (g1, g2, t, vindex, index1, index2), Received {argnum}"
         return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
     elif rq == 'int_vx3g_od':
-        assert argnum >= 5, f"Integrals of type vx3g_m must have at least seven arguments (g1, g2, t, vindex, index1, index2, index3), Received {argnum}"
-        return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
+        assert argnum >= 5, f"Integrals of type vx3g_od must have at least seven arguments (g1, g2, t, vindex, index1, index2, index3), Received {argnum}"
+        return atom_intor.int_vx3g_offdiag(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
     else:
         raise g.IIRSException(rq, "elem")
 

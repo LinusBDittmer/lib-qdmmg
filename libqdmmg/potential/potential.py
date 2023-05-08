@@ -201,21 +201,22 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        r_taylor = (g1.width * g1.centre + g2.width * g2.centre) / (g1.width + g2.width)
+        sim = self.potential.sim
+        r_taylor = (g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
-        gg = intor.int_request('int_gg', g1, g2, t)
+        gg = intor.int_request(sim, 'int_gg', g1, g2, t)
         v0 = v_const * gg
-        gxg = numpy.zeros(self.potential.sim.dim)
-        gx2g = numpy.zeros((self.potential.sim.dim, self.potential.sim.dim))
+        gxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        gx2g = numpy.zeros((sim.dim, sim.dim), dtype=numpy.complex128)
         for i in range(len(gxg)):
-            gxg[i] = intor.int_request('int_gxg', g1, g2, t, i, m=gg, useM=True)
+            gxg[i] = intor.int_request(sim, 'int_gxg', g1, g2, t, i, m=gg, useM=True)
             for j in range(len(gxg)):
-                gx2g[i,j] = intor.int_request('int_gx2g', g1, g2, t, i, j, m=gg, useM=True)
+                gx2g[i,j] = intor.int_request(sim, 'int_gx2g', g1, g2, t, i, j, m=gg, useM=True)
         v1 = gxg - gg * r_taylor
         v2 = gx2g - numpy.einsum('k,m->mk', r_taylor, gxg) - numpy.einsum('m,k->mk', r_taylor, gxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * gg
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
 
     def _int_uVg(self, g1, g2, t):
         '''
@@ -235,7 +236,22 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        return 0
+        sim = self.potential.sim
+        r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
+        v_const = self.potential.evaluate(r_taylor)
+        grad = self.potential.gradient(r_taylor)
+        hess = self.potential.hessian(r_taylor)
+        ug = intor.int_request(sim, 'int_ug', g1, g2, t)
+        v0 = v_const * ug
+        uxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        ux2g = numpy.zeros((sim.dim, sim.dim), dtype=numpy.complex128)
+        for i in range(len(uxg)):
+            uxg[i] = intor.int_request(sim, 'int_uxg', g1, g2, t, i, m=ug, useM=True)
+            for j in range(len(uxg)):
+                ux2g[i,j] = intor.int_request(sim, 'int_ux2g', g1, g2, t, i, j, m=ug, useM=True)
+        v1 = uxg - ug * r_taylor
+        v2 = ux2g - numpy.einsum('k,m->mk', r_taylor, uxg) - numpy.einsum('m,k->mk', r_taylor, uxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * ug
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
 
     def _int_uVxg(self, g1, g2, t, index):
         '''
@@ -257,8 +273,24 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        return 0
+        sim = self.potential.sim
+        r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
+        v_const = self.potential.evaluate(r_taylor)
+        grad = self.potential.gradient(r_taylor)
+        hess = self.potential.hessian(r_taylor)
+        ug = intor.int_request(sim, 'int_ug', g1, g2, t)
+        uxg = intor.int_request(sim, 'int_uxg', g1, g2, t, index, m=ug, useM=True)
+        ux2g = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        ux3g = numpy.zeros((sim.dim, sim.dim), dtype=numpy.complex128)
+        for i in range(sim.dim):
+            ux2g[i] = intor.int_request(sim, 'int_ux2g', g1, g2, t, index, i, m=ug, useM=True)
+            for j in range(sim.dim):
+                ux3g[i,j] = intor.int_request(sim, 'int_ux3g', g1, g2, t, i, j, index, useM=True)
+        v0 = v_const * uxg
+        v1 = ux2g - uxg * r_taylor
+        v2 = ux3g - numpy.einsum('k,m->mk', r_taylor, ux2g) - numpy.einsum('m,k->mk', r_taylor, ux2g) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * uxg
 
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
     
     def _int_vVg(self, g1, g2, t, vindex):
         '''
@@ -280,8 +312,23 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        return 0
-
+        sim = self.potential.sim
+        r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+        v_const = self.potential.evaluate(r_taylor)
+        grad = self.potential.gradient(r_taylor)
+        hess = self.potential.hessian(r_taylor)
+        vg = intor.int_request(sim, 'int_vg', g1, g2, t, vindex)
+        v0 = v_const * vg
+        vxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        vx2g = numpy.zeros((sim.dim, sim.dim), dtype=numpy.complex128)
+        for i in range(len(vxg)):
+            vxg[i] = intor.int_request(sim, 'int_vxg', g1, g2, t, vindex, i, m=vg, useM=True)
+            for j in range(len(vxg)):
+                vx2g[i,j] = intor.int_request(sim, 'int_vx2g', g1, g2, t, vindex, i, j, m=vg, useM=True)
+        v1 = vxg - vg * r_taylor
+        v2 = vx2g - numpy.einsum('k,m->mk', r_taylor, vxg) - numpy.einsum('m,k->mk', r_taylor, vxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * vg
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
+    
     def _int_vVxg(self, g1, g2, t, vindex, index):
         '''
         Integral of the function v1 * V * x_(index) * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
@@ -304,6 +351,23 @@ class PotentialIntegrator:
         int_val : complex128
             Integral value.
         '''
-        return 0
+        sim = self.potential.sim
+        r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+        v_const = self.potential.evaluate(r_taylor)
+        grad = self.potential.gradient(r_taylor)
+        hess = self.potential.hessian(r_taylor)
+        vg = intor.int_request(sim, 'int_vg', g1, g2, t, vindex)
+        vxg = intor.int_request(sim, 'int_vxg', g1, g2, t, vindex, index, m=vg, useM=True)
+        vx2g = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        vx3g = numpy.zeros((sim.dim, sim.dim), dtype=numpy.complex128)
+        for i in range(sim.dim):
+            vx2g[i] = intor.int_request(sim, 'int_vx2g', g1, g2, t, vindex, i, index, m=vg, useM=True)
+            for j in range(sim.dim):
+                vx3g[i] = intor.int_request(sim, 'int_vx3g', g1, g2, t, vindex, i, j, index, m=vg, useM=True)
+        v0 = v_const * vxg
+        v1 = vx2g - vxg * r_taylor
+        v2 = vx3g - numpy.einsum('k,m->mk', r_taylor, vx2g) - numpy.einsum('m,k->mk', r_taylor, vx2g) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * vxg
+
+        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
 
 
