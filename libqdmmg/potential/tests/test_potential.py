@@ -46,10 +46,11 @@ class TestPotentialIntegrator(unittest.TestCase):
     def setUp(self):
         self.dim = 3
         self.sim = sim.Simulation(2, 1.0, dim=self.dim)
-        self.pot = pot.TrialPotential(self.sim, numpy.zeros(self.dim), numpy.array((1, 0, 0)))
+        self.pot = pot.TrialPotential(self.sim, numpy.array((1, 1, 1)), numpy.array((1, 1, 1)))
+        
         self.pot_intor = self.pot.gen_potential_integrator()
-        self.g1 = gen.Gaussian(self.sim, centre=numpy.array((-0.5, 0.5, 1.0)))
-        self.g2 = gen.Gaussian(self.sim, centre=numpy.array((-0.5, 0.5, 1.0))) #, momentum=numpy.array((1.0, 0.1, -0.1)))
+        self.g1 = gen.Gaussian(self.sim, centre=numpy.array((-0.5, 0.0, 1.0)))
+        self.g2 = gen.Gaussian(self.sim, centre=numpy.array((-0.5, 0.0, 1.0))) #, momentum=numpy.array((1.0, 0.1, -0.1)))
 
     def tearDown(self):
         del self.dim
@@ -77,9 +78,9 @@ class TestPotentialIntegrator(unittest.TestCase):
         self.assertAlmostEqual(int1.real, int2.real, delta=10**-4)
     
     def test_uVxg(self):
-        # index 0
-        f = lambda x0, x1, x2 : self.g1.evaluateU(numpy.array((x0, x1, x2)), 0) * x0
-        int1 = self.pot_intor._int_uVxg(self.g1, self.g2, 0, 0)
+        # index 1
+        f = lambda x0, x1, x2 : self.g1.evaluateU(numpy.array((x0, x1, x2)), 0) * x1
+        int1 = self.pot_intor._int_uVxg(self.g1, self.g2, 0, 1)
         int2 = self.scipyIntegral(f)
         self.assertAlmostEqual(int1.real, int2.real, delta=10**-4)
 
@@ -91,9 +92,9 @@ class TestPotentialIntegrator(unittest.TestCase):
         self.assertAlmostEqual(int1.real, int2.real, delta=10**-4)
 
     def test_vVxg(self):
-        # vindex 0, index 0
-        f = lambda x0, x1, x2 : self.g1.evaluateV(numpy.array((x0, x1, x2)), 0) * x0
-        int1 = self.pot_intor._int_vVxg(self.g1, self.g2, 0, 0, 0)
+        # vindex 0, index 1
+        f = lambda x0, x1, x2 : self.g1.evaluateV(numpy.array((x0, x1, x2)), 0) * x1
+        int1 = self.pot_intor._int_vVxg(self.g1, self.g2, 0, 0, 1)
         int2 = self.scipyIntegral(f)
         self.assertAlmostEqual(int1.real, int2.real, delta=10**-4)
 

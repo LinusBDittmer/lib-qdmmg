@@ -67,7 +67,7 @@ class Potential:
             gradient[i] = (self.evaluate(xp) - self.evaluate(xm)) / epsilon * 0.5
         return gradient
 
-    def num_hessian(self, x):
+    def num_hessian(self, x, epsilon=10**-5):
         hess = numpy.zeros((self.sim.dim, self.sim.dim))
         for i in range(self.sim.dim):
             for j in range(self.sim.dim):
@@ -286,9 +286,38 @@ class PotentialIntegrator:
             ux2g[i] = intor.int_request(sim, 'int_ux2g', g1, g2, t, index, i, m=ug, useM=True)
             for j in range(sim.dim):
                 ux3g[i,j] = intor.int_request(sim, 'int_ux3g', g1, g2, t, i, j, index, useM=True)
+                print(f"Indices : {i}, {j}, {index}; Value : {ux3g[i,j]}")
         v0 = v_const * uxg
         v1 = ux2g - uxg * r_taylor
         v2 = ux3g - numpy.einsum('k,m->mk', r_taylor, ux2g) - numpy.einsum('m,k->mk', r_taylor, ux2g) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * uxg
+
+        v1_t = 0.0
+        for k in range(sim.dim):
+            v1_t += grad[k] * (intor.int_request(sim, 'int_ux2g', g1, g2, t, index, k, m=ug, useM=True) - r_taylor[k] * intor.int_request(sim, 'int_uxg', g1, g2, t, index, m=ug, useM=True))
+
+        v2_t = 0.0
+        for m in range(sim.dim):
+            for k in range(sim.dim):
+                v2t1 = intor.int_request(sim, 'int_ux3g', g1, g2, t, k, index, m, m=ug, useM=True)
+                v2t2 = intor.int_request(sim, 'int_ux2g', g1, g2, t, m, index, m=ug, useM=True) * r_taylor[k]
+                v2t3 = intor.int_request(sim, 'int_ux2g', g1, g2, t, k, index, m=ug, useM=True) * r_taylor[m]
+                v2t4 = intor.int_request(sim, 'int_uxg', g1, g2, t, index, m=ug, useM=True) * r_taylor[k] * r_taylor[m]
+                v2_t += hess[m,k] * (v2t1 - v2t2 - v2t3 + v2t4)
+        
+        v1v = numpy.dot(grad, v1)
+        v2v = numpy.einsum('ij,ji->', hess, v2)
+        print(f"V0 : {v0}")
+        print(f"V1 : {v1}")
+        print(f"V2 : {v2}")
+        print(f"Const : {v_const}")
+        print(f"Grad : {grad}")
+        print(f"Hess : {hess}")
+        print(f"R Taylor : {r_taylor}")
+        print(f"Centre 1 : {g1.centre[t]}")
+        print(f"Centre 2 : {g2.centre[t]}")
+        print(f"uxg : {uxg}")
+        print(f"ux2g : {ux2g}")
+        print(f"ux3g : {ux3g}")
 
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
     
@@ -327,6 +356,7 @@ class PotentialIntegrator:
                 vx2g[i,j] = intor.int_request(sim, 'int_vx2g', g1, g2, t, vindex, i, j, m=vg, useM=True)
         v1 = vxg - vg * r_taylor
         v2 = vx2g - numpy.einsum('k,m->mk', r_taylor, vxg) - numpy.einsum('m,k->mk', r_taylor, vxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * vg
+
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
     
     def _int_vVxg(self, g1, g2, t, vindex, index):

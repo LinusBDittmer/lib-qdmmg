@@ -301,7 +301,7 @@ def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     c2 = 1.0 / (g1width[index2] + g2width[index2])
     if not useM:
         m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
-    return 0.25 * (v2*c1*c2 + 2 * v2*c2*c2 + 0.5*v1*v2*v2*c1*c2*c2) * m
+    return 0.25 * (v1*c1*c2 + 0.5*v1*v2*v2*c1*c2*c2) * m
 
 def int_gx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
     '''
@@ -591,15 +591,14 @@ def int_ux3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     g2centre = numpy.array(g2centre)
     g1momentum = numpy.array(g1momentum)
     g2momentum = numpy.array(g2momentum)
-    c1 = numpy.linalg.norm(g1width) - g1width[index1]
-    c_inv1 = 1.0 / (c1 + g2width[index1])
-    c2 = c1 + g1width[index1] - g1width[index2]
-    c_inv2 = 1.0 / (c2 + g2width[index2])
-    p1 = 2*c1*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
-    p2 = 2*c2*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j*g2momentum[index2]
+    gn = numpy.linalg.norm(g1width)
+    c_inv1 = 1.0 / (gn - g1width[index1] + g2width[index1])
+    c_inv2 = 1.0 / (gn - g1width[index2] + g2width[index2])
+    p1 = 2*gn*g1centre[index1] - 2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
+    p2 = 2*gn*g1centre[index2] - 2*g1width[index2]*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j*g2momentum[index2]
     if not useM:
         m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
-    return 0.25 * (p2*c_inv1*c_inv2 + 2*p2*c_inv2*c_inv2 + 0.5*p1*p2*p2*c_inv1*c_inv2*c_inv2) * m
+    return 0.25 * (p1 * c_inv1 * c_inv2 + 0.5 * p1 * p2 * p2 * c_inv1 * c_inv2 * c_inv2) * m
 
 def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
     '''
@@ -741,9 +740,9 @@ def int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
     cvec_inv = 1.0 / (g1width + g2width)
     prefactor1 = numpy.sqrt(numpy.prod(g2width*cvec_inv))
     p = 2 * g2width * g2centre - 2 * g1width * g1centre + 1j * g2momentum
-    ep1 = - reduce(numpy.dot, (g1width, g1centre*g1centre)) - reduce(numpy.dot, (g2width, g2centre*g2centre))
+    ep1 = reduce(numpy.dot, (g1width, g1centre*g1centre)) - reduce(numpy.dot, (g2width, g2centre*g2centre))
     ep2 = reduce(numpy.dot, (cvec_inv, p*p))
-    return 2**(len(g1width)*0.5+2.5) * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
+    return 2**(len(g1width)*0.5+1) * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
 
 def int_vxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index, m=0.0, useM=False):
     '''
@@ -946,7 +945,7 @@ def int_vx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     p2 = -2*g1width[index2]*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j+g2momentum[index2]
     if not useM:
         m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
-    return 0.25 * (p2*c_inv1*c_inv2 + 2*p2*c_inv2*c_inv2 + 0.5*p1*p2*p2*c_inv1*c_inv2*c_inv2) * m
+    return 0.25 * (p1*c_inv1*c_inv2 + 0.5*p1*p2*p2*c_inv1*c_inv2*c_inv2) * m
 
 def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index, m=0.0, useM=False):
     '''

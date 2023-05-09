@@ -20,14 +20,14 @@ class TrialPotential(Potential):
     def evaluate(self, x):
         return 0.5 * reduce(numpy.dot, (self.forces, x*x)) + reduce(numpy.dot, (self.grad, x))
 
+    def gen_potential_integrator(self):
+        return TrialPotentialIntegrator(self)
+
     def gradient(self, x):
         return self.forces * x + self.grad
 
     def hessian(self, x):
         return numpy.diag(self.forces)
-
-    def gen_potential_integrator(self):
-        return TrialPotentialIntegrator(self)
 
 class TrialPotentialIntegrator(PotentialIntegrator):
     
