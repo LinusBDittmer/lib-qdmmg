@@ -32,6 +32,7 @@ class Potential:
         '''
         self.sim = sim
         self.logger = sim.logger
+        self.reduced_mass = numpy.ones(sim.dim)
 
     def evaluate(self, x):
         '''
@@ -56,6 +57,12 @@ class Potential:
 
     def hessian(self, x):
         return self.num_hessian(x)
+
+    def grad(self, x):
+        return self.gradient(x)
+
+    def hess(self, x):
+        return self.hessian(x)
 
     def num_gradient(self, x, epsilon=10**-5):
         gradient = numpy.zeros(x.shape)

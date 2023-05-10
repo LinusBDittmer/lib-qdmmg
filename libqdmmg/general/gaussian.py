@@ -218,7 +218,7 @@ class Gaussian:
         return self.width[index] / self.width[0] * self.v_amp[t]
 
 
-    def step_forward(self):
+    def step_forward(self, t):
         '''
         Internal management of the time-integration scheme. The Gaussian time-integration employs a symmetric explicit time integration scheme of the form
 
@@ -229,7 +229,6 @@ class Gaussian:
         Except for the first timestep, in which the usual explicit time-integration scheme is used.
 
         '''
-        t = self.sim.t
         if t == 0:
             self.centre[1] = self.centre[0] + self.sim.tstep_val * self.d_centre[0]
             self.momentum[1] = self.momentum[0] + self.sim.tstep_val * self.d_momentum[0]

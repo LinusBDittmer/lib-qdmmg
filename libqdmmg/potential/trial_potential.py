@@ -33,7 +33,7 @@ class TrialPotentialIntegrator(PotentialIntegrator):
     
     def __init__(self, tp):
         super().__init__(tp)
-        assert isinstance(tp, TrialPotential), f"Inadmissible potential of type {type(ho)}"
+        assert isinstance(tp, TrialPotential), f"Inadmissible potential of type {type(tp)}"
 
 
         

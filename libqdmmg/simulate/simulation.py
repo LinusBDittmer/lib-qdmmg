@@ -7,6 +7,7 @@ Central class for Lib-QDMMG
 
 import libqdmmg.general as gen
 import libqdmmg.potential as pot
+import libqdmmg.simulate as sim
 
 class Simulation:
 
@@ -16,11 +17,12 @@ class Simulation:
         self.tsteps = tsteps
         self.tstep_val = tstep_val
         self.logger = gen.new_logger(self)
-        self.t = 0
+        #self.t = 0
 
         self.previous_wavefunction = None
         self.active_gaussian = None
         self.potential = None
+        self.eom_master = sim.EOM_Master(self)
         self.generations = 1
 
     def bind_potential(self, potential):
@@ -28,29 +30,36 @@ class Simulation:
         self.potential = potential
 
 
-    def step_forward(self):
-        if not isinstance(self.previous_wavefunction, gen.wavepacket.Wavepacket):
-            self.step_forward_initial()
-            return
-        self.active_gaussian.step_forward()
-        self.t += 1
+    def step_forward(self, t, isInitial=False):
+        if isInitial:
+            self.step_forward_initial(t)
+        else:
+            self.active_gaussian.step_forward()
+            #self.previous_wavefunction.step_forward()
+        #self.t += 1
 
-    def step_forward_initial(self):
-        self.active_gaussian.step_forward()
-        self.t += 1
-
+    def step_forward_initial(self, t):
+        self.active_gaussian.step_forward(t)
+        #self.t += 1
+        
 
     def run_timesteps(self, isInitial=False):
         # Main timestepping loop for adding gaussians
-        pass
+        for t in range(self.tsteps):
+            self.eom_master.prepare_next_step(t, isInitial)
+            if t < self.tsteps-1:
+                self.step_forward(t, isInitial)
+
 
     def gen_wavefunction(self):
         # Main executable function for generation of the final wavefunction
 
         # Generate first gaussian
-        self.active_gaussian = gen.Gaussian(self)
+        if not isinstance(self.active_gaussian, gen.gaussian.Gaussian):
+            self.active_gaussian = gen.Gaussian(self)
         # Timestepping
         self.run_timesteps(isInitial=True)
+        '''
         # Binding first gaussian to wavepackt
         self.previous_wavefunction = gen.Wavepacket(self)
         self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
@@ -63,4 +72,4 @@ class Simulation:
             # Binding new gaussian
             self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
             # Check convergence
-        
+        '''
