@@ -48,7 +48,8 @@ class Logger:
     def print_header(self):
         if self._header or not libqdmmg.is_logger_cardinal(self): return
         version = libqdmmg.__version__
-        with open('res/header.txt') as f:
+        dirname = __file__[:__file__.rfind('/')]
+        with open(dirname+'/res/header.txt') as f:
             c = "".join(f.readlines())
             c = c.replace("{version}", version)
             print(c)
@@ -61,13 +62,14 @@ class Logger:
         if self._verbose == 0 or self._coda or not libqdmmg.is_logger_cardinal(self): 
             return
         exec_details = ""
+        dirname = __file__[:__file__.rfind('/')]
         if libqdmmg.error_on_exit():
-            with open('res/coda_error.txt') as f:
+            with open(dirname+'/res/coda_error.txt') as f:
                 c = "".join(f.readlines())
                 c = c.replace("{exec_details}", exec_details)
                 print(c)
         else:
-            with open('res/coda.txt') as f:
+            with open(dirname+'/res/coda.txt') as f:
                 c = "".join(f.readlines())
                 c = c.replace("{exec_details}", exec_details)
                 print(c)

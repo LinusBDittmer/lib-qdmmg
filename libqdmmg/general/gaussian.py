@@ -229,14 +229,42 @@ class Gaussian:
         Except for the first timestep, in which the usual explicit time-integration scheme is used.
 
         '''
+        self.logger.debug2("Gaussian " + str(self) + " stepping forward in time.")
         if t == 0:
+            self.logger.debug1("Asymmetric Integration scheme on first time step.")
             self.centre[1] = self.centre[0] + self.sim.tstep_val * self.d_centre[0]
             self.momentum[1] = self.momentum[0] + self.sim.tstep_val * self.d_momentum[0]
             self.phase[1] = self.phase[0] + self.sim.tstep_val * self.d_phase[0]
+            
+            self.logger.info("Centre:")
+            for k in range(self.sim.dim):
+                self.logger.info(" " * 10 + str(round(self.centre[0,k], 12)) + "  -->  " + str(round(self.centre[1,k], 12)))
+            self.logger.info("")
+            self.logger.info("Momentum:")
+            for k in range(self.sim.dim):
+                self.logger.info(" " * 10 + str(round(self.momentum[0,k], 12)) + "  -->  " + str(round(self.momentum[1,k], 12)))
+            self.logger.info("")
+            self.logger.info("Phase:")
+            self.logger.info(" " * 10 + str(round(self.phase[0], 12)) + "  -->  " + str(round(self.phase[1], 12)))
         else:
+            self.logger.debug1("Symetric Integration scheme on subsequent steps.")
             self.centre[t+1] = self.centre[t-1] + 2 * self.sim.tstep_val * self.d_centre[t]
             self.momentum[t+1] = self.momentum[t-1] + 2 * self.sim.tstep_val * self.d_momentum[t]
             self.phase[t+1] = self.phase[t-1] + 2 * self.sim.tstep_val * self.d_phase[t]
+
+            self.logger.info("Centre:")
+            for k in range(self.sim.dim):
+                self.logger.info(" " * 10 + str(round(self.centre[t,k], 12)) + "  -->  " + str(round(self.centre[t+1,k], 12)))
+            self.logger.info("")
+            self.logger.info("Momentum:")
+            for k in range(self.sim.dim):
+                self.logger.info(" " * 10 + str(round(self.momentum[t,k], 12)) + "  -->  " + str(round(self.momentum[t+1,k], 12)))
+            self.logger.info("")
+            self.logger.info("Phase:")
+            self.logger.info(" " * 10 + str(round(self.phase[t], 12)) + "  -->  " + str(round(self.phase[t+1], 12)))
+
+
+
 
     def copy(self, dephase=False):
         '''

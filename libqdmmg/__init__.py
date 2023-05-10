@@ -26,7 +26,6 @@ def is_logger_cardinal(logger):
 
 def error_on_exit():
     global _hooks
-    print(_hooks.exit_code)
     return not ((_hooks.exit_code is None or _hooks.exit_code == 0) and (_hooks.exception is None))
 
 class ExitHooks:

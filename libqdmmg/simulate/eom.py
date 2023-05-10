@@ -12,7 +12,7 @@ def eom_init_centre(sim, pot, g, t):
     return dx_bar
 
 def eom_init_momentum(sim, pot, g, t):
-    dp = numpy.diag(pot.hessian(g.centre[t])) - pot.gradient(g.centre[t]) - 4 * g.width * g.width * g.centre[t] / pot.reduced_mass
+    dp = numpy.diag(pot.hessian(g.centre[t])) * g.centre[t] - pot.gradient(g.centre[t]) - 4 * g.width * g.width * g.centre[t] / pot.reduced_mass
     return dp
 
 def eom_init_phase(sim, pot, g, t):
@@ -27,10 +27,10 @@ def eom_init_phase(sim, pot, g, t):
     return dg0 + dg1 + dg2
 
 def eom_centre(sim, pot, g, t):
-    return 0
+    return 4.0
 
-def eom_init_momentum(sim, pot, g, t):
-    return 0
+def eom_momentum(sim, pot, g, t):
+    return 4.0
 
-def eom_init_phase(sim, pot, g, t):
-    return 0
+def eom_phase(sim, pot, g, t):
+    return 4.0
