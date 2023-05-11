@@ -28,7 +28,9 @@ class TestEOMInit(unittest.TestCase):
 
     def test_simulation(self):
         self.simulation.gen_wavefunction()
-        self.assertAlmostEqual(self.simulation.active_gaussian.centre[1], 0.0, delta=10**-9)
+        self.assertAlmostEqual(self.simulation.active_gaussian.centre[1,0], 0.0, delta=10**-9)
+        self.assertAlmostEqual(self.simulation.active_gaussian.momentum[1,0], 0.0, delta=10**-9)
+        self.assertAlmostEqual(self.simulation.active_gaussian.phase[1], -0.5, delta=10**-9)
 
 if __name__ == '__main__':
     unittest.main()

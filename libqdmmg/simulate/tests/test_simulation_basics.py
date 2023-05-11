@@ -27,7 +27,6 @@ class TestGaussian(unittest.TestCase):
     def test_variables(self):
         self.assertTrue(hasattr(self.s, 'dim'))
 
-        self.assertTrue(hasattr(self.s, 't'))
         self.assertTrue(hasattr(self.s, 'tsteps'))
         self.assertTrue(hasattr(self.s, 'tstep_val'))
         

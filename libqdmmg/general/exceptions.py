@@ -20,3 +20,12 @@ class InvalidIntegralRequestStringException(Exception):
             a = "composite "
         return f"The received integral request string is not a valid {a}integral descriptor." 
 
+class SimulationNotRunException(Exception):
+
+    def __init__(self, sim, *args):
+        super().__init__(args)
+        self.sim = sim
+
+    def __str__(self):
+        return f"Simulation was not run yet, no data can be given."
+

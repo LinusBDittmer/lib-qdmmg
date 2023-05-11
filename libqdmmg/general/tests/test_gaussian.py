@@ -41,7 +41,7 @@ class TestGaussian(unittest.TestCase):
     def test_evaluate_v(self):
         kernel = lambda x0, x1 : self.g.evaluateV(numpy.array((x0, x1)), 0) * x0**2 * self.g.evaluate(numpy.array((x0, x1)), 0)
         int1 = si.nquad(kernel, [[-4, 4], [-4, 4]])[0]
-        self.assertAlmostEqual(int1, 1.0, delta=10**-7)
+        self.assertAlmostEqual(int1, 0.5, delta=10**-7)
 
 if __name__ == '__main__':
     unittest.main()

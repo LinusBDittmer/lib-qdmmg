@@ -9,6 +9,8 @@ import libqdmmg.general as gen
 import libqdmmg.potential as pot
 import libqdmmg.simulate as sim
 
+import numpy
+
 class Simulation:
 
     def __init__(self, tsteps, tstep_val, verbose=0, dim=1):
@@ -17,13 +19,12 @@ class Simulation:
         self.tsteps = tsteps
         self.tstep_val = tstep_val
         self.logger = gen.new_logger(self)
-        #self.t = 0
 
         self.previous_wavefunction = None
         self.active_gaussian = None
         self.potential = None
         self.eom_master = sim.EOM_Master(self)
-        self.generations = 1
+        self.generations = 0
         self.logger.debug3("Initialised Simulation object at " + str(self))
 
     def bind_potential(self, potential):
@@ -38,12 +39,9 @@ class Simulation:
             self.step_forward_initial(t)
         else:
             self.active_gaussian.step_forward()
-            #self.previous_wavefunction.step_forward()
-        #self.t += 1
 
     def step_forward_initial(self, t):
         self.active_gaussian.step_forward(t)
-        #self.t += 1
         
 
     def run_timesteps(self, isInitial=False):
@@ -67,10 +65,9 @@ class Simulation:
             self.active_gaussian = gen.Gaussian(self)
         # Timestepping
         self.run_timesteps(isInitial=True)
-        '''
         # Binding first gaussian to wavepackt
         self.previous_wavefunction = gen.Wavepacket(self)
-        self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
+        self.previous_wavefunction.bindGaussian(self.active_gaussian.copy(), numpy.ones(self.tsteps))
 
         for generation in range(self.generations):
             # Generate next gaussian
@@ -80,17 +77,18 @@ class Simulation:
             # Binding new gaussian
             self.previous_wavefunction.bindGaussian(self.active_gaussian.copy())
             # Check convergence
-        '''
+
+    def get_wavefunction(self):
+        if self.previous_wavefunction is None:
+            raise gen.SNRException(self)
+        return self.previous_wavefunction
 
 if __name__ == '__main__':
-    import libqdmmg.simulate as sim
-    import libqdmmg.potential as pot
-    import libqdmmg.general as gen
     import numpy
 
-    s = sim.Simulation(10, 1, dim=1, verbose=5)
+    s = sim.Simulation(2, 1, dim=1, verbose=5)
     p = pot.HarmonicOscillator(s, numpy.ones(1))
     s.bind_potential(p)
-    s.active_gaussian = gen.Gaussian(s, width=0.5*numpy.ones(1), centre=numpy.ones(1))
+    s.active_gaussian = gen.Gaussian(s, width=0.5*numpy.ones(1)) #, centre=numpy.ones(1))
     s.gen_wavefunction()
 

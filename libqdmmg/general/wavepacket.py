@@ -63,7 +63,7 @@ class Wavepacket:
         for i, c in enumerate(coeff):
             if abs(c.real - c) > 10**-3:
                 coeff[i] = abs(c)
-            self.logger.warn("Significant complex phase in coefficient detected. Phase should be exported to basis and coeffs kept real. Phase is discarded.")
+                self.logger.warn("Significant complex phase in coefficient detected. Phase should be exported to basis and coeffs kept real. Phase is discarded.")
         if self.gauss_coeff.size == 0:
             self.gauss_coeff = numpy.ones((1, self.sim.tsteps))
         else:
