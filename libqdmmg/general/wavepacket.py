@@ -5,6 +5,7 @@ Class for a general Wavepacket. Used to describe prior wavefunctions
 '''
 
 import numpy
+import libqdmmg.integrate as intor
 
 class Wavepacket:
     '''
@@ -68,10 +69,10 @@ class Wavepacket:
             self.gauss_coeff = numpy.ones((1, self.sim.tsteps))
         else:
             self.gauss_coeff = numpy.append(self.gauss_coeff, numpy.array([coeff.real]), axis=0)
-            for t in range(self.sim.tsteps):
-                self.gauss_coeff[:,t] /= numpy.linalg.norm(self.gauss_coeff[:,t])
+        for t in range(self.sim.tsteps):
+            self.gauss_coeff[:,t] /= abs(numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_ww', self, self, t)))
 
-    def getCoeffs(self, t):
+    def get_coeffs(self, t):
         '''
         Getter for the array of gaussian coefficients at a specific timestep t.
 
@@ -106,6 +107,7 @@ class Wavepacket:
             Value of the Wavepacket
         '''
         val = 0.0
+        x = numpy.array(x)
         for i, gauss in enumerate(self.gaussians):
             val += self.gauss_coeff[i,t] * gauss.evaluate(x, t)
         return val
@@ -114,9 +116,11 @@ class Wavepacket:
 if __name__ == '__main__':
     import libqdmmg.simulate as sim
     import libqdmmg.general as gen
-    s = sim.Simulation(2, 1.0, dim=2)
+    s = sim.Simulation(2, 1.0, dim=2, verbose=4)
     g1 = gen.Gaussian(s)
     g2 = gen.Gaussian(s, centre=numpy.array([0.0, 0.5]))
     w = gen.Wavepacket(s)
     w.bindGaussian(g1, numpy.array([1.0, 1.0]))
     w.bindGaussian(g2, numpy.array([1.0, 0.5]))
+    s.logger.info(w.get_coeffs(0))
+    s.logger.info(intor.int_request(s, 'int_ovlp_ww', w, w, 0))

@@ -17,12 +17,15 @@ class HarmonicOscillator(Potential):
         self.forces = forces
 
     def evaluate(self, x):
+        x = numpy.array(x)
         return 0.5 * reduce(numpy.dot, (self.forces, x*x))
 
     def gradient(self, x):
+        x = numpy.array(x)
         return self.forces * x
 
     def hessian(self, x):
+        x = numpy.array(x)
         return numpy.diag(self.forces)
 
     def gen_potential_integrator(self):

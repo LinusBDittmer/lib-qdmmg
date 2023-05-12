@@ -4,11 +4,12 @@
 
 '''
 
+import numpy
 import libqdmmg.integrate.atom_integration_handler as atom_intor
-import libqdmmg.general as g
+import libqdmmg.general as gen
 
 ELEM_INTEGRALS = ['int_gg', 'int_gxg', 'int_gx2g', 'int_gx2g_m', 'int_gx2g_d', 'int_gx3g', 'int_gx3g_m', 'int_gx3g_d', 'int_gx3g_od', 'int_ug', 'int_uxg', 'int_ux2g', 'int_ux2g_m', 'int_ux2g_d', 'int_ux3g', 'int_ux3g_m', 'int_ux3g_d', 'int_ux3g_od', 'int_vg', 'int_vxg', 'int_vx2g', 'int_vx2g_m', 'int_vx2g_d', 'int_vx3g', 'int_vx3g_m', 'int_vx3g_d', 'int_vx3g_od']
-COMP_INTEGRALS = ['int_ovlp', 'int_ovlp_prev', 'int_dovlp', 'int_dovlp_prev', 'int_dovlp_prev2', 'int_dovlp_prevprev', 'int_kinetic', 'int_kinetic_prev', 'int_kinetic_coupling']
+COMP_INTEGRALS = ['int_ovlp_gg', 'int_ovlp_wg', 'int_ovlp_gw', 'int_ovlp_ww', 'int_dovlp_gg', 'int_dovlp_wg', 'int_dovlp_gw', 'int_dovlp_ww', 'int_kinetic_gg', 'int_kinetic_gw', 'int_kinetic_wg', 'int_kinetic_ww']
 
 
 def int_request(sim, request_string, *args, **kwargs):
@@ -77,9 +78,9 @@ def int_request(sim, request_string, *args, **kwargs):
     rq = request_string.strip().lower()
 
     if rq in ELEM_INTEGRALS:
-        return int_atom_request(request_string, args, kwargs)
+        return int_atom_request(request_string, *args, **kwargs)
     elif rq in COMP_INTEGRALS:
-        return int_composite_request(sim, request_string, args, kwargs)
+        return int_composite_request(sim, request_string, *args, **kwargs)
     else:
         raise g.IIRSException(rq, "")
 
@@ -88,15 +89,17 @@ def int_composite_request(sim, request_string, *args, **kwargs):
     '''
     This function handles requests for analytical integral calculations of composite integrals. These are performed by combining the respective elementary integrals. The following request strings are allowed:
 
-    int_ovlp
-    int_ovlp_prev
-    int_dovlp
-    int_dovlp_prev
-    int_dovlp_prev2
-    int_dovlp_prevprev
-    int_kinetic
-    int_kinetic_prev
-    int_kinetic_coupling
+    int_ovlp_gg
+    int_ovlp_gw
+    int_ovlp_ww
+    int_dovlp_gg
+    int_dovlp_gw
+    int_dovlp_wg
+    int_dovlp_ww
+    int_kinetic_gg
+    int_kinetic_gw
+    int_kinetic_wg
+    int_kinetic_ww
     
     Parameters
     ----------
@@ -118,30 +121,94 @@ def int_composite_request(sim, request_string, *args, **kwargs):
     ------
     InvalidIntegralRequestStringException
         If the request string does not match any valid argument.
+    AssertionError
+        If the given arguments are insufficient.
     '''
 
     rq = request_string.strip().lower()
+    argnum = len(args)
+    assert argnum >= 3, f"All composite integrals require at least three arguments. Received {argnum}"
+    assert isinstance(args[2], int), f"Timestep index must be given as integer in third argument slot. Received {type(args[2])}"
+    t = args[2]
 
-    if rq == 'int_ovlp':
+    if '_gg' in rq or '_gw' in rq:
+        assert isinstance(args[0], gen.gaussian.Gaussian), f"For integrals of type -gg or -gw, the first argument must be a Gaussian. Received {type(args[0])}"
+    if '_gg' in rq or '_wg' in rq:
+        assert isinstance(args[1], gen.gaussian.Gaussian), f"For integrals of type -gg or -wg, the second argument must be a Gaussian. Received {type(args[1])}"
+    if '_wg' in rq or '_ww' in rq:
+        assert isinstance(args[0], gen.wavepacket.Wavepacket), f"For integrals of type -wg or -ww, the first argument must be a Wavepacket. Received {type(args[0])}"
+    if '_gw' in rq or '_ww' in rq:
+        assert isinstance(args[1], gen.wavepacket.Wavepacket), f"For integrals of type -gw or -ww, the second argument must be a Wavepacket. Received {type(args[1])}"
+
+    if rq == 'int_ovlp_gg':
+        return int_atom_request('int_gg', args, kwargs)
+    elif rq == 'int_ovlp_wg':
+        wp = args[0]
+        g = args[1]
+        coeffs = wp.get_coeffs(t)
+        int_gg_tensor = numpy.zeros(coeffs.shape, dtype=numpy.complex128)
+        for i in range(len(coeffs)):
+            int_gg_tensor[i] = int_atom_request('int_gg', wp.gaussians[i], g, t)
+        return numpy.dot(coeffs, int_gg_tensor)
+    elif rq == 'int_ovlp_gw':
+        args[0], args[1] = args[1], args[0]
+        return int_composite_request(sim, 'int_ovlp_wg', args, kwargs).conj()
+    elif rq == 'int_ovlp_ww':
+        wp1 = args[0]
+        wp2 = args[1]
+        coeffs1 = wp1.get_coeffs(t)
+        coeffs2 = wp2.get_coeffs(t)
+        int_gg_tensor = numpy.zeros((len(coeffs1), len(coeffs2)), dtype=numpy.complex128)
+        for i in range(len(coeffs1)):
+            for j in range(len(coeffs2)):
+                int_gg_tensor[i,j] = int_atom_request('int_gg', wp1.gaussians[i], wp2.gaussians[j], t)
+        return numpy.einsum('i,ij,j', coeffs1, int_gg_tensor, coeffs2)
+    elif rq == 'int_dovlp_gg':
         return 0
-    elif rq == 'int_ovlp_prev':
+    elif rq == 'int_dovlp_wg':
         return 0
-    elif rq == 'int_dovlp':
+    elif rq == 'int_dovlp_gw':
         return 0
-    elif rq == 'int_dovlp_prev':
+    elif rq == 'int_dovlp_ww':
         return 0
-    elif rq == 'int_dovlp_prev2':
-        return 0
-    elif rq == 'int_dovlp_doubleprev':
-        return 0
-    elif rq == 'int_kinetic':
-        return 0
-    elif rq == 'int_kinetic_prev':
-        return 0
-    elif rq == 'int_kinetic_coupling':
-        return 0
+    elif rq == 'int_kinetic_gg':
+        g1, g2 = args[0], args[1]
+        int_gg = int_atom_request('int_gg', g1, g2, t)
+        int_gxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        int_gx2g = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        for i in range(sim.dim):
+            int_gxg[i] = int_atom_request('int_gxg', g1, g2, t, i, m=int_gg, useM=True)
+            int_gx2g[i] = int_atom_request('int_gx2g_d', g1, g2, t, i, m=int_gg, useM=True)
+        kin_vec = 4 * g2.width * g2.width * (int_gx2g - 2 * g2.centre[t] * int_gxg + g2.centre[t] * g2.centre[t] * int_gg)
+        kin_vec -= 4j * g2.width * g2.momentum[t] * (int_gxg - g2.centre[t] * int_gg)
+        kin_vec -= (2 * g2.width + g2.momentum[t] * g2.momentum[t]) * int_gg
+        kin = numpy.dot(kin_vec, 1.0 / sim.potential.reduced_mass)
+        return -0.5 * kin
+    elif rq == 'int_kinetic_wg':
+        wp, g1 = args[0], args[1]
+        coeffs = wp.get_coeffs(t)
+        kin_gauss = numpy.zeros(coeffs.shape, dtype=numpy.complex128)
+        for i in range(len(coeffs)):
+            kin_gauss[i] = int_composite_request(sim, 'int_kinetic_gg', wp.gaussians[i], g1, t)
+        return numpy.dot(coeffs, kin_gauss)
+    elif rq == 'int_kinetic_gw':
+        g1, wp = args[0], args[1]
+        coeffs = wp.get_coeffs(t)
+        kin_gauss = numpy.zeros(coeffs.shape, dtype=numpy.complex128)
+        for i in range(len(coeffs)):
+            kin_gauss[i] = int_composite_request(sim, 'int_kinetic_gg', g1, wp.gaussians[i], t)
+        return numpy.dot(coeffs, kin_gauss)
+    elif rq == 'int_kinetic_ww':
+        wp1, wp2 = args[0], args[1]
+        coeffs1 = wp1.get_coeffs(t)
+        coeffs2 = wp2.get_coeffs(t)
+        kin_gauss = numpy.zeros((len(coeffs1), len(coeffs2)), dtype=numpy.complex128)
+        for i in range(len(coeffs1)):
+            for j in range(len(coeffs2)):
+                kin_gauss[i,j] = int_composite_request(sim, 'int_kinetic_gg', wp1.gaussians[i], wp2.gaussians[j], t)
+        return numpy.einsum('i,ij,j', coeffs1, kin_gauss, coeffs2)
     else:
-        raise g.IIRSException(rq, "comp")
+        raise gen.IIRSException(rq, "comp")
 
 
 
@@ -203,13 +270,14 @@ def int_atom_request(request_string, *args, **kwargs):
         raise Exception('No integral arguments given.')
 
     rq = request_string.strip().lower()
-    args = args[0][0]
+    while len(args) == 2:
+        args = args[0]
     argnum = len(args)
 
     # Prescreening
     # All Elementary integrals have g1, g2, t
     assert argnum >= 3, f"All integrals require at least three arguments (g1, g2, t). Received {len(args)}"
-    assert isinstance(args[0], g.gaussian.Gaussian) and isinstance(args[1], g.gaussian.Gaussian), f"Two Gaussians must be given as the first two arguments"
+    assert isinstance(args[0], gen.gaussian.Gaussian) and isinstance(args[1], gen.gaussian.Gaussian), f"Two Gaussians must be given as the first two arguments"
     assert isinstance(args[2], int), f"Timestep must be given as index in the third argument"
 
     g1 = args[0]
@@ -314,7 +382,7 @@ def int_atom_request(request_string, *args, **kwargs):
         if argnum >= 6:
             if args[4] != args[5]:
                 return atom_intor.int_vx2g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
-        return atom_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
+        return atom_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], kwargs)
     elif rq == 'int_vx2g_d':
         assert argnum >= 5, f"Integrals of type vx2g and vx2g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2]), Received {argnum}"
         return atom_intor.int_vx2g_diag(g1, g2, t, vindex, args[4], kwargs)
@@ -335,7 +403,7 @@ def int_atom_request(request_string, *args, **kwargs):
         if argnum == 6:
             if args[4] != args[5]:
                 return atom_intor.int_vx3g_mixed(g1, g2, t, vindex, args[4], args[5], kwargs)
-        return atom_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], args[5], kwargs)
+        return atom_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], kwargs)
     elif rq == 'int_vx3g_d':
         assert argnum >= 5, f"Integrals of type vx3g and vx3g_d must have at least five arguments (g1, g2, t, vindex, index1, [index2, index3]), Received {argnum}"
         return atom_intor.int_vx3g_diag(g1, g2, t, vindex, args[4], kwargs)
@@ -346,5 +414,5 @@ def int_atom_request(request_string, *args, **kwargs):
         assert argnum >= 5, f"Integrals of type vx3g_od must have at least seven arguments (g1, g2, t, vindex, index1, index2, index3), Received {argnum}"
         return atom_intor.int_vx3g_offdiag(g1, g2, t, vindex, args[4], args[5], args[6], kwargs)
     else:
-        raise g.IIRSException(rq, "elem")
+        raise gen.IIRSException(rq, "elem")
 

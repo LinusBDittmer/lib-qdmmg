@@ -109,7 +109,7 @@ class Potential:
         pot_intor : libqdmmg.potential.potential.PotentialIntegrator
             A potential integrator instance.
         '''
-        return None
+        return PotentialIntegrator(self)
 
 
 class PotentialIntegrator:
@@ -175,7 +175,7 @@ class PotentialIntegrator:
         assert argnum >= 3, f"Expected at least 3 arguments (g1, g2, t). Received {argnum}."
 
         if rq == 'int_gvg':
-            return self._int_gVg(args)
+            return self._int_gVg(args[0], args[1], args[2])
         elif rq == 'int_uvg':
             return self._int_uVg(args)
         elif rq == 'int_vvg':
