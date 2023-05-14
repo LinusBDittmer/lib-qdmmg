@@ -23,8 +23,8 @@ class TestWavepacket(unittest.TestCase):
         g1 = gen.Gaussian(s)
         g2 = gen.Gaussian(s, centre=numpy.array([0.0, 0.5]))
         w = gen.Wavepacket(s)
-        w.bindGaussian(g1, numpy.array([1.0]))
-        w.bindGaussian(g2, numpy.array([1.0]))
+        w.bind_gaussian(g1, numpy.array([1.0]))
+        w.bind_gaussian(g2, numpy.array([1.0]))
         return w
 
     def test_getCoeffs(self):

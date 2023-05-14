@@ -5,7 +5,7 @@ Container for General Gaussian used for wavepacket propagation
 '''
 
 import numpy
-import copy
+import libqdmmg.integrate as intor
 from functools import reduce
 
 class Gaussian:
@@ -217,6 +217,15 @@ class Gaussian:
             self.v_amp[t] = 2**(0.5*self.sim.dim+1) * self.width[0] * numpy.pi**(-self.sim.dim*0.5) * w_prod**0.5 * numpy.exp(2 * ep)
         return self.width[index] / self.width[0] * self.v_amp[t]
 
+    def energy_kin(self, t):
+        return intor.int_request(self.sim, 'int_kinetic_gg', self, self, t).real
+
+    def energy_pot(self, t):
+        pot_intor = self.sim.potential.gen_potential_integrator()
+        return pot_intor.int_request('int_gVg', self, self, t).real
+
+    def energy_tot(self, t):
+        return self.energy_kin(t) + self.energy_pot(t)
 
     def step_forward(self, t):
         '''
@@ -247,7 +256,7 @@ class Gaussian:
             self.logger.info("Phase:")
             self.logger.info(" " * 10 + str(round(self.phase[0], 12)) + "  -->  " + str(round(self.phase[1], 12)))
         else:
-            self.logger.debug1("Symetric Integration scheme on subsequent steps.")
+            self.logger.debug1("Symmetric Integration scheme employed.")
             self.centre[t+1] = self.centre[t-1] + 2 * self.sim.tstep_val * self.d_centre[t]
             self.momentum[t+1] = self.momentum[t-1] + 2 * self.sim.tstep_val * self.d_momentum[t]
             self.phase[t+1] = self.phase[t-1] + 2 * self.sim.tstep_val * self.d_phase[t]

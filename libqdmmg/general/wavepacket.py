@@ -47,7 +47,7 @@ class Wavepacket:
         self.gauss_coeff = numpy.array([[]])
         self.logger = sim.logger
 
-    def bindGaussian(self, g1, coeff):
+    def bind_gaussian(self, g1, coeff):
         '''
         Function that adds (binds) another Gaussian to the wavepacket. The individual gaussian coefficients are updated to reflect normalisation.
 
@@ -68,6 +68,8 @@ class Wavepacket:
         if self.gauss_coeff.size == 0:
             self.gauss_coeff = numpy.ones((1, self.sim.tsteps))
         else:
+            for t in range(self.sim.tsteps):
+                self.gauss_coeff[:,t] *= numpy.sqrt(1 - coeff[t].real*coeff[t].real)
             self.gauss_coeff = numpy.append(self.gauss_coeff, numpy.array([coeff.real]), axis=0)
         for t in range(self.sim.tsteps):
             self.gauss_coeff[:,t] /= abs(numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_ww', self, self, t)))
@@ -112,15 +114,26 @@ class Wavepacket:
             val += self.gauss_coeff[i,t] * gauss.evaluate(x, t)
         return val
 
+    def energy_kin(self, t):
+        return intor.int_request(self.sim, 'int_kinetic_ww', self, self, t).real        
+
+    def energy_pot(self, t):
+        pot_intor = self.sim.potential.gen_potential_integrator()
+        return pot_intor.int_request('int_wVw', self, self, t).real
+
+    def energy_tot(self, t):
+        return self.energy_kin(t) + self.energy_pot(t)
 
 if __name__ == '__main__':
     import libqdmmg.simulate as sim
     import libqdmmg.general as gen
+    import libqdmmg.potential as pot
     s = sim.Simulation(2, 1.0, dim=2, verbose=4)
+    s.bind_potential(pot.HarmonicOscillator(s, numpy.ones(2)))
     g1 = gen.Gaussian(s)
     g2 = gen.Gaussian(s, centre=numpy.array([0.0, 0.5]))
     w = gen.Wavepacket(s)
-    w.bindGaussian(g1, numpy.array([1.0, 1.0]))
-    w.bindGaussian(g2, numpy.array([1.0, 0.5]))
+    w.bind_gaussian(g1, numpy.array([1.0, 1.0]))
+    w.bind_gaussian(g2, numpy.array([0.5, 0.5]))
     s.logger.info(w.get_coeffs(0))
     s.logger.info(intor.int_request(s, 'int_ovlp_ww', w, w, 0))

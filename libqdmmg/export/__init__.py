@@ -1,22 +1,13 @@
 '''
 
-author: Linus Bjarne Dittmer
-
-This module handles export of data to comprehensible filetypes.
+author : Linus Bjarne Dittmer
 
 '''
 
-import libqdmmg.export.linear_plot as lp
-import libqdmmg.export.density_plot as dp
+import libqdmmg.export.wavefunction_json as wj
 
-def linear_plot(axs, prop, index, **kwargs):
-    lp.linear_plot(axs, prop, index, **kwargs)
+def export_to_json(wp, path):
+    wj.export_to_json(wp, path)
 
-def linear_plots(*prop, **kwargs):
-    lp.linear_plots(*prop, **kwargs)
-
-def density_plots(wp, **kwargs):
-    dp.density_plots(wp, **kwargs)
-
-def density_plot(ax, wp, index, res, dist, desc, **kwargs):
-    dp.density_plot(ax, wp, index, res, dist, desc, **kwargs)
+def import_from_json(wp, path):
+    wj.import_from_json(wp, path)

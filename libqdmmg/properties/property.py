@@ -42,7 +42,7 @@ class Property:
         if isinstance(obj, gen.gaussian.Gaussian):
             g = obj.copy()
             obj = gen.Wavepacket(self.sim)
-            obj.bindGaussian(g, numpy.ones(self.sim.tsteps))
+            obj.bind_gaussian(g, numpy.ones(self.sim.tsteps))
 
         assert isinstance(obj, gen.wavepacket.Wavepacket), f"Only Gaussians and Wavepackets can be processed for kinetic energy. Received {type(obj)}"
         return obj
@@ -113,10 +113,10 @@ class AverageDisplacement(Property):
 if __name__ == '__main__':
     import libqdmmg.simulate as sim
     import libqdmmg.export as exp
-    s = sim.Simulation(100, 0.05, dim=2, verbose=5)
-    p = pot.HarmonicOscillator(s, numpy.ones(2))
+    s = sim.Simulation(20, 0.05, dim=1, verbose=3, generations=1)
+    p = pot.HarmonicOscillator(s, numpy.ones(1))
     s.bind_potential(p)
-    s.active_gaussian = gen.Gaussian(s, width=0.5*numpy.ones(2), centre=1.0*numpy.ones(2))
+    s.active_gaussian = gen.Gaussian(s, width=0.5*numpy.ones(1), centre=1.0*numpy.ones(1))
     s.gen_wavefunction()
     kin_energy = KineticEnergy(s)
     pot_energy = PotentialEnergy(s)
@@ -132,6 +132,3 @@ if __name__ == '__main__':
     s.logger.info(pot_energy.get())
     s.logger.info("Total Energy:")
     s.logger.info(tot_energy.get())
-    exp.linear_plots(kin_energy, pot_energy, tot_energy, name='energy', title='Energy of HO', ylim=(0.0, 1.5))
-    exp.density_plots(s.previous_wavefunction, cmap='Pastel1')
-

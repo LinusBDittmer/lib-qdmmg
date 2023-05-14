@@ -5,7 +5,7 @@
 '''
 
 import numpy
-import libqdmmg.general as g
+import libqdmmg.general as gen
 import libqdmmg.integrate as intor
 from functools import reduce
 
@@ -145,6 +145,9 @@ class PotentialIntegrator:
         int_uVxg
         int_vVg
         int_vVxg
+        int_wVw
+        int_wVg
+        int_gVw
 
         Parameters
         ----------
@@ -187,8 +190,33 @@ class PotentialIntegrator:
         elif rq == 'int_vvxg':
             assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index). Received {argnum}."
             return self._int_vVxg(args, kwargs)
+        elif rq == 'int_wvw':
+            return self._int_wVw(args[0], args[1], args[2])
+        elif rq == 'int_wvg':
+            return self._int_wVg(args[0], args[1], args[2])
+        elif rq == 'int_gvw':
+            return self._int_gVw(args[0], args[1], args[2])
         else:
-            raise g.IIRSException(rq, "")
+            raise gen.IIRSException(rq, "")
+
+    def _int_wVw(self, w1, w2, t):
+        int_val = 0.0
+        coeffs1 = w1.get_coeffs(t)
+        coeffs2 = w2.get_coeffs(t)
+        for i in range(len(coeffs1)):
+            for j in range(len(coeffs2)):
+                int_val += coeffs1[i]*coeffs2[i]*self._int_gVg(w1.gaussians[i], w2.gaussians[j], t)
+        return int_val
+
+    def _int_wVg(self, w1, g2, t):
+        int_val = 0
+        coeffs = w1.get_coeffs(t)
+        for i in range(len(coeffs)):
+            int_val += coeffs[i]*self._int_gVg(w1.gaussians[i], g2, t)
+        return int_val
+
+    def _int_gVw(self, g1, w2, t):
+        return self._int_wVg(w2, g1, t).conj()
 
     def _int_gVg(self, g1, g2, t):
         '''

@@ -20,13 +20,16 @@ def Wavepacket(sim):
     return wavepacket.Wavepacket(sim)
 
 def InvalidIntegralRequestStringException(rq, int_class, *args):
-    return exceptions.InvalidIntegralRequestStringException(rq, int_class, args)
+    return exceptions.InvalidIntegralRequestStringException(rq, int_class, *args)
 
 def SimulationNotRunException(sim, *args):
-    return exceptions.SimulationNotRunException(sim, args)
+    return exceptions.SimulationNotRunException(sim, *args)
 
 def SNRException(sim, *args):
-    return SimulationNotRunException(sim, args)
+    return SimulationNotRunException(sim, *args)
 
 def IIRSException(rq, int_class, *args):
-    return InvalidIntegralRequestStringException(rq, int_class, args)
+    return InvalidIntegralRequestStringException(rq, int_class, *args)
+
+def InvalidJSONFlagException(path, *args):
+    return exceptions.InvalidJSONFlagException(path, *args)

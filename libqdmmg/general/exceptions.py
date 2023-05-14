@@ -29,3 +29,12 @@ class SimulationNotRunException(Exception):
     def __str__(self):
         return f"Simulation was not run yet, no data can be given."
 
+class InvalidJSONFlagException(Exception):
+
+    def __init__(self, path, *args):
+        super().__init__(args)
+        self.path = path
+    
+    def __str__(self):
+        return f"The JSON file loaded from {self.path} does not contain a Wavepacket."
+

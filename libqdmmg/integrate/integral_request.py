@@ -16,15 +16,19 @@ def int_request(sim, request_string, *args, **kwargs):
     '''
     This function is the main interface for accessing analytical integrals. These are requested by providing the main simulation instance and a request string, which can be either a composite or elementary analytic integral as well as the respective arguments and keyword arguments. Note that the request string is not case-sensitive. Whenever an analytical integral is required, it should be accessed through this function. The following options are allowed:
 
-    int_ovlp
-    int_ovlp_prev
-    int_dovlp
-    int_dovlp_prev
-    int_dovlp_prev2
-    int_dovlp_prevprev
-    int_kinetic
-    int_kinetic_prev
-    int_kinetic_coupling
+    int_ovlp_gg
+    int_ovlp_wg
+    int_ovlp_gw
+    int_ovlp_ww
+    int_dovlp_gg
+    int_dovlp_gw
+    int_dovlp_wg
+    int_dovlp_ww
+    int_kinetic_gg
+    int_kinetic_gw
+    int_kinetic_wg
+    int_kinetic_gw
+    int_kinetic_ww
     int_gg
     int_gxg
     int_gx2g
@@ -82,7 +86,7 @@ def int_request(sim, request_string, *args, **kwargs):
     elif rq in COMP_INTEGRALS:
         return int_composite_request(sim, request_string, *args, **kwargs)
     else:
-        raise g.IIRSException(rq, "")
+        raise gen.IIRSException(rq, "")
 
 
 def int_composite_request(sim, request_string, *args, **kwargs):
@@ -141,7 +145,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         assert isinstance(args[1], gen.wavepacket.Wavepacket), f"For integrals of type -gw or -ww, the second argument must be a Wavepacket. Received {type(args[1])}"
 
     if rq == 'int_ovlp_gg':
-        return int_atom_request('int_gg', args, kwargs)
+        return int_atom_request('int_gg', *args, **kwargs)
     elif rq == 'int_ovlp_wg':
         wp = args[0]
         g = args[1]
@@ -151,8 +155,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
             int_gg_tensor[i] = int_atom_request('int_gg', wp.gaussians[i], g, t)
         return numpy.dot(coeffs, int_gg_tensor)
     elif rq == 'int_ovlp_gw':
-        args[0], args[1] = args[1], args[0]
-        return int_composite_request(sim, 'int_ovlp_wg', args, kwargs).conj()
+        return int_composite_request(sim, 'int_ovlp_wg', args[1], args[0], t, kwargs).conj()
     elif rq == 'int_ovlp_ww':
         wp1 = args[0]
         wp2 = args[1]
@@ -164,13 +167,44 @@ def int_composite_request(sim, request_string, *args, **kwargs):
                 int_gg_tensor[i,j] = int_atom_request('int_gg', wp1.gaussians[i], wp2.gaussians[j], t)
         return numpy.einsum('i,ij,j', coeffs1, int_gg_tensor, coeffs2)
     elif rq == 'int_dovlp_gg':
-        return 0
+        g1 = args[0]
+        g2 = args[1]
+        gg = int_atom_request('int_gg', g1, g2, t)
+        gxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        for i in range(sim.dim):
+            gxg[i] = int_atom_request('int_gxg', g1, g2, t, i)
+        dovlp_vec1 = gxg - g2.centre[t] * gg
+        dovlp1 = 2 * numpy.dot(g2.width*g2.d_centre[t], dovlp_vec1)
+        dovlp2 = numpy.dot(g2.d_momentum[t], gxg)
+        return dovlp1 + 1j*(dovlp2 + g2.phase[t]*gg)
     elif rq == 'int_dovlp_wg':
-        return 0
+        wp = args[0]
+        g1 = args[1]
+        coeffs = wp.get_coeffs(t)
+        int_val = 0.0
+        for i in range(len(coeffs)):
+            int_val += coeffs[i]*int_composite_request(sim, 'int_dovlp_gg', wp.gaussians[i], g1, t)
+        return int_val
     elif rq == 'int_dovlp_gw':
-        return 0
+        g1 = args[0]
+        wp = args[1]
+        coeffs = wp.get_coeffs(t)
+        coeffs_t = numpy.copy(coeffs)
+        if t < sim.tsteps:
+            coeffs_t = wp.get_coeffs(t+1)
+        d_coeffs = (coeffs_t - coeffs) / sim.tstep_val
+        int_val = 0.0
+        for i in range(len(coeffs)):
+            int_val += d_coeffs[i] * int_atom_request('int_gg', g1, wp.gaussians[i], t) + coeffs[i] * int_composite_request(sim, 'int_dovlp_gg', g1, wp.gaussians[i], t)
+        return int_val
     elif rq == 'int_dovlp_ww':
-        return 0
+        wp1 = args[0]
+        wp2 = args[1]
+        coeffs = wp1.get_coeffs(t)
+        int_val = 0.0
+        for i in range(len(coeffs)):
+            int_val += coeffs[i] * int_composite_request(sim, 'int_dovlp_gw', wp1.gaussians[i], wp2, t)
+        return int_val
     elif rq == 'int_kinetic_gg':
         g1, g2 = args[0], args[1]
         int_gg = int_atom_request('int_gg', g1, g2, t)

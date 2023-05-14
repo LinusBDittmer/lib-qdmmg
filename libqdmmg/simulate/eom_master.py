@@ -28,9 +28,10 @@ class EOM_Master:
             #print(self.sim.active_gaussian.d_momentum)
             #print(self.sim.active_gaussian.d_phase)
         else:
-            self.sim.active_gaussian.d_centre[t] = eom.eom_centre(self.sim.potential, self.sim.active_gaussian, t)
-            self.sim.active_gaussian.d_momentum[t] = eom.eom_momentum(self.sim.potential, self.sim.active_gaussian, t)
-            self.sim.active_gaussian.d_phase[t] = eom.eom_phase(self.sim.potential, self.sim.active_gaussian, t)
+            self.sim.active_gaussian.d_centre[t] = eom.eom_centre(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            self.sim.active_gaussian.d_momentum[t] = eom.eom_momentum(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            self.sim.active_gaussian.d_phase[t] = eom.eom_phase(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            self.sim.d_active_coeffs[t] = eom.eom_coefficient(self.sim, self.sim.potential, self.sim.active_gaussian, t)
 
 
 if __name__ == '__main__':

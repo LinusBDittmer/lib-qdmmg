@@ -6,6 +6,7 @@ author: Linus Bjarne Dittmer
 
 '''
 import numpy
+import libqdmmg.integrate as intor
 
 def eom_init_centre(sim, pot, g, t):
     dx_bar = g.momentum[t] / pot.reduced_mass
@@ -27,10 +28,33 @@ def eom_init_phase(sim, pot, g, t):
     return dg0 + dg1 + dg2
 
 def eom_centre(sim, pot, g, t):
-    return 4.0
+    return eom_init_centre(sim, pot, g, t)
 
 def eom_momentum(sim, pot, g, t):
-    return 4.0
+    return eom_init_momentum(sim, pot, g, t)
 
 def eom_phase(sim, pot, g, t):
-    return 4.0
+    return eom_init_phase(sim, pot, g, t)
+
+def eom_coefficient(sim, pot, g, t):
+    wp = sim.previous_wavefunction
+    coeff = sim.active_coeffs[t]
+    pot_intor = pot.gen_potential_integrator()
+    ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g, g, t)
+    ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g, wp, t)
+    dovlp_gg = intor.int_request(sim, 'int_dovlp_gg', g, g, t)
+    dovlp_gw = intor.int_request(sim, 'int_dovlp_gw', g, wp, t)
+    dovlp_wg = intor.int_request(sim, 'int_dovlp_wg', wp, g, t)
+    dovlp_ww = intor.int_request(sim, 'int_dovlp_ww', wp, wp, t)
+
+    e_g = g.energy_tot(t)
+    e_wp = wp.energy_tot(t)
+    e_coupling = intor.int_request(sim, 'int_kinetic_gw', g, wp, t)
+    ab_ratio = coeff / (1 - coeff*coeff)
+
+    a_term = dovlp_gg + dovlp_wg + 1j*(e_g - ab_ratio * e_coupling.conj())
+    b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - ab_ratio * e_wp)
+    inv_term = 2 * ab_ratio * ovlp_gw.real - ovlp_gg - ab_ratio*ab_ratio
+
+    d_coeff = ((coeff * a_term + numpy.sqrt(1 - coeff*coeff) * b_term) / inv_term).real
+    return d_coeff
