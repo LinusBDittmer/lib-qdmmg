@@ -38,7 +38,8 @@ def eom_phase(sim, pot, g, t):
 
 def eom_coefficient(sim, pot, g, t):
     wp = sim.previous_wavefunction
-    coeff = sim.active_coeffs[t]
+    logger = sim.logger
+    a_coeff = sim.active_coeffs[t]
     pot_intor = pot.gen_potential_integrator()
     ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g, g, t)
     ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g, wp, t)
@@ -50,11 +51,21 @@ def eom_coefficient(sim, pot, g, t):
     e_g = g.energy_tot(t)
     e_wp = wp.energy_tot(t)
     e_coupling = intor.int_request(sim, 'int_kinetic_gw', g, wp, t)
-    ab_ratio = coeff / (1 - coeff*coeff)
+    e_coupling += pot_intor.int_request('int_gVw', g, wp, t)
+    b_coeff = numpy.sqrt(1 - a_coeff*a_coeff)
+    ab_ratio = a_coeff / b_coeff
 
     a_term = dovlp_gg + dovlp_wg + 1j*(e_g - ab_ratio * e_coupling.conj())
     b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - ab_ratio * e_wp)
     inv_term = 2 * ab_ratio * ovlp_gw.real - ovlp_gg - ab_ratio*ab_ratio
 
-    d_coeff = ((coeff * a_term + numpy.sqrt(1 - coeff*coeff) * b_term) / inv_term).real
+    logger.debug3(f"A Term      : {a_term}")
+    logger.debug3(f"B Term      : {b_term}")
+    logger.debug3(f"A           : {a_coeff}")
+    logger.debug3(f"B           : {b_coeff}")
+    logger.debug3(f"Inv Term    : {inv_term}")
+    logger.debug3(f"AB Ratio    : {ab_ratio}")
+
+    d_coeff = ((a_coeff * a_term + b_coeff * b_term) / inv_term).real
+    logger.debug3(f"Coefficient differential : {d_coeff}")
     return d_coeff

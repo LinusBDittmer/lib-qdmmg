@@ -35,6 +35,11 @@ def export_to_json(wp, path):
         Wavepacket which is to be exported.
     path : str
         Filepath of the json file (with .json ending)
+    
+    Raises
+    ------
+    OSError:
+        If an error occurs in I/O.
     '''
     json_dict = {}
     json_dict['type'] = 'Wavepacket'
@@ -55,6 +60,25 @@ def export_to_json(wp, path):
         json.dump(json_dict, f, ensure_ascii=False, indent=4)
 
 def import_from_json(wp, path):
+    '''
+    This function imports a wavepacket from a json file located at (path) into the provided (wp) wavepacket instance. It first checks whether the load can be performed and then overrides the data present in the wavepacket.
+
+    Parameters
+    ----------
+    wp : libqdmmg.general.wavepacket.Wavepacket
+        Destination wavepacket into which the json file is loaded
+    path : str
+        Filepath from which the json file is read. Note that this needs to be the full file name (i. e. './example.json', not 'example'), but may be a relative filepath.
+
+    Raises
+    ------
+    FileNotFoundError:
+        If the file given in (path) does not exist.
+    InvalidJSONFlagException:
+        If the JSON file does not contain a Wavepacket
+    AssertionError:
+        If the provided JSON and Wavepacket's time signature do not match
+    '''
     json_dict = None
     with open(path, 'r') as f:
         json_dict = json.load(f)

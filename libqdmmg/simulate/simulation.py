@@ -105,10 +105,11 @@ class Simulation:
 
 if __name__ == '__main__':
     import numpy
+    import libqdmmg.plotting as plot
 
-    s = sim.Simulation(100, 0.01, dim=1, verbose=5, generations=2)
-    p = pot.HarmonicOscillator(s, 10*numpy.ones(1))
+    s = sim.Simulation(500, 0.005, dim=1, verbose=5, generations=15)
+    p = pot.HarmonicOscillator(s, numpy.ones(1))
     s.bind_potential(p)
     s.gen_wavefunction()
-    print(s.active_coeffs)
+    plot.density_plot_ascii(s.previous_wavefunction, 'trial.txt', 0, 'density', width=80, height=180)
 

@@ -5,6 +5,7 @@ author : Linus Bjarne Dittmer
 '''
 
 import numpy
+'''
 import matplotlib.pyplot as plt
 
 def density_plots(wp, **kwargs):
@@ -21,7 +22,7 @@ def density_plots(wp, **kwargs):
     plt.colorbar(c)
     plt.tight_layout()
     plt.savefig('./test.png', bbox_inches='tight', dpi=200)
-
+'''
 def plot_content(wp, xv, t, desc='amplitude', amp='real'):
     a = wp.evaluate(xv, t)
     if desc == 'amplitude' and amp == 'real':
@@ -32,7 +33,7 @@ def plot_content(wp, xv, t, desc='amplitude', amp='real'):
         return abs(a)**2
     else:
         return 0
-
+'''
 def density_plot(ax, wp, index, res, dist, desc, **kwargs):
     density = numpy.zeros((wp.sim.tsteps, res))
     xcross = numpy.linspace(-dist, dist, num=res)
@@ -49,7 +50,7 @@ def density_plot(ax, wp, index, res, dist, desc, **kwargs):
         cm = 'afmhot' if desc == 'density' else 'seismic'
     c = ax.imshow(density, extent=(0, wp.sim.tsteps*wp.sim.tstep_val, -dist, dist), interpolation='bilinear', cmap=cm)
     return c
-
+'''
 def get_ascii_string(d, width, height):
     ascii_template = ' .:-=+*#%@'
     i_indices = numpy.linspace(0, len(d)-1, num=height)
