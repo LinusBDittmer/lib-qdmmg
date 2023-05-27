@@ -24,14 +24,24 @@ class EOM_Master:
             self.logger.debug1("Calculating Phase")
             self.sim.active_gaussian.d_phase[t] = eom.eom_init_phase(self.sim, self.sim.potential, self.sim.active_gaussian, t)
             self.logger.info("Finished calculating EOM by initial set")
-            #print(self.sim.active_gaussian.d_centre)
-            #print(self.sim.active_gaussian.d_momentum)
-            #print(self.sim.active_gaussian.d_phase)
         else:
-            self.sim.active_gaussian.d_centre[t] = eom.eom_centre(self.sim, self.sim.potential, self.sim.active_gaussian, t)
-            self.sim.active_gaussian.d_momentum[t] = eom.eom_momentum(self.sim, self.sim.potential, self.sim.active_gaussian, t)
-            self.sim.active_gaussian.d_phase[t] = eom.eom_phase(self.sim, self.sim.potential, self.sim.active_gaussian, t)
-            self.sim.d_active_coeffs[t] = eom.eom_coefficient(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            d_centre = eom.eom_centre(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            d_momentum = eom.eom_momentum(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            d_phase = eom.eom_phase(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            d_coeff = eom.eom_coefficient(self.sim, self.sim.potential, self.sim.active_gaussian, t)
+            for i in range(self.sim.dim):
+                if numpy.isnan(d_centre[i]):
+                    d_centre[i] = 0
+                if numpy.isnan(d_momentum[i]):
+                    d_momentum[i] = 0
+            if numpy.isnan(d_phase):
+                d_phase = 0
+            if numpy.isnan(d_coeff):
+                d_coeff = 0
+            self.sim.active_gaussian.d_centre[t] = d_centre
+            self.sim.active_gaussian.d_momentum[t] = d_momentum
+            self.sim.active_gaussian.d_phase[t] = d_phase
+            self.sim.d_active_coeffs[t] = d_coeff
 
 
 if __name__ == '__main__':

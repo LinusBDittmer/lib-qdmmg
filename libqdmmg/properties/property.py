@@ -26,6 +26,7 @@ class Property:
         if obj is None:
             obj = self.sim.previous_wavefunction
         for t in range(self.sim.tsteps):
+            self.logger.info("Computing Property " + self.descriptor + " at timestep " + str(t))
             self.values[t] = self.compute(obj, t)
 
     def compute(self, obj, t):
@@ -89,13 +90,13 @@ class KineticEnergy(Property):
 
 class TotalEnergy(Property):
 
-    def __init__(self, sim):
+    def __init__(self, sim, kinetic_energy, potential_energy):
         super().__init__(sim, "Total Energy", dtype=float)
-        self.kinetic_energy = KineticEnergy(sim)
-        self.potential_energy = PotentialEnergy(sim)
+        self.kinetic_energy = kinetic_energy
+        self.potential_energy = potential_energy
 
     def compute(self, obj, t):
-        return self.kinetic_energy.compute(obj, t) + self.potential_energy.compute(obj, t)
+        return self.kinetic_energy.values[t] + self.potential_energy.values[t]
 
 class AverageDisplacement(Property):
 

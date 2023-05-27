@@ -178,47 +178,47 @@ class PotentialIntegrator:
         assert argnum >= 3, f"Expected at least 3 arguments (g1, g2, t). Received {argnum}."
 
         if rq == 'int_gvg':
-            return self._int_gVg(args[0], args[1], args[2])
+            return self._int_gVg(*args)
         elif rq == 'int_uvg':
-            return self._int_uVg(args)
+            return self._int_uVg(*args)
         elif rq == 'int_vvg':
             assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, vindex). Received {argnum}."
-            return self._int_vVg(args)
+            return self._int_vVg(*args)
         elif rq == 'int_uvxg':
             assert argnum >= 4, f"Expected at least 4 arguments (g1, g2, t, index). Received {argnum}."
-            return self._int_uVxg(args, kwargs)
+            return self._int_uVxg(*args, **kwargs)
         elif rq == 'int_vvxg':
             assert argnum >= 5, f"Expected at least 5 arguments (g1, g2, t, vindex, index). Received {argnum}."
-            return self._int_vVxg(args, kwargs)
+            return self._int_vVxg(*args, **kwargs)
         elif rq == 'int_wvw':
-            return self._int_wVw(args[0], args[1], args[2])
+            return self._int_wVw(*args)
         elif rq == 'int_wvg':
-            return self._int_wVg(args[0], args[1], args[2])
+            return self._int_wVg(*args)
         elif rq == 'int_gvw':
-            return self._int_gVw(args[0], args[1], args[2])
+            return self._int_gVw(*args)
         else:
             raise gen.IIRSException(rq, "")
 
-    def _int_wVw(self, w1, w2, t):
+    def _int_wVw(self, w1, w2, t, r_taylor=None):
         int_val = 0.0
         coeffs1 = w1.get_coeffs(t)
         coeffs2 = w2.get_coeffs(t)
         for i in range(len(coeffs1)):
             for j in range(len(coeffs2)):
-                int_val += coeffs1[i]*coeffs2[i]*self._int_gVg(w1.gaussians[i], w2.gaussians[j], t)
+                int_val += coeffs1[i]*coeffs2[i]*self._int_gVg(w1.gaussians[i], w2.gaussians[j], t, r_taylor=r_taylor)
         return int_val
 
-    def _int_wVg(self, w1, g2, t):
+    def _int_wVg(self, w1, g2, t, r_taylor=None):
         int_val = 0
         coeffs = w1.get_coeffs(t)
         for i in range(len(coeffs)):
-            int_val += coeffs[i]*self._int_gVg(w1.gaussians[i], g2, t)
+            int_val += coeffs[i]*self._int_gVg(w1.gaussians[i], g2, t, r_taylor=r_taylor)
         return int_val
 
-    def _int_gVw(self, g1, w2, t):
-        return self._int_wVg(w2, g1, t).conj()
+    def _int_gVw(self, g1, w2, t, r_taylor=None):
+        return self._int_wVg(w2, g1, t, r_taylor=r_taylor).conj()
 
-    def _int_gVg(self, g1, g2, t):
+    def _int_gVg(self, g1, g2, t, r_taylor=None):
         '''
         Integral of the function g1 * V * g2.
 
@@ -237,7 +237,8 @@ class PotentialIntegrator:
             Integral value.
         '''
         sim = self.potential.sim
-        r_taylor = (g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+        if r_taylor is None:
+            r_taylor = (g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
@@ -253,7 +254,7 @@ class PotentialIntegrator:
         v2 = gx2g - numpy.einsum('k,m->mk', r_taylor, gxg) - numpy.einsum('m,k->mk', r_taylor, gxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * gg
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
 
-    def _int_uVg(self, g1, g2, t):
+    def _int_uVg(self, g1, g2, t, r_taylor=None):
         '''
         Integral of the function u1 * V * g2. u1 is the u-dual function of the Gaussian g1.
 
@@ -272,7 +273,8 @@ class PotentialIntegrator:
             Integral value.
         '''
         sim = self.potential.sim
-        r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
+        if r_taylor is None:
+            r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
@@ -288,7 +290,7 @@ class PotentialIntegrator:
         v2 = ux2g - numpy.einsum('k,m->mk', r_taylor, uxg) - numpy.einsum('m,k->mk', r_taylor, uxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * ug
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
 
-    def _int_uVxg(self, g1, g2, t, index):
+    def _int_uVxg(self, g1, g2, t, index, r_taylor=None):
         '''
         Integral of the function u1 * V * x_(index) * g2. u1 is the u-dual function of the Gaussian g1.
 
@@ -309,7 +311,8 @@ class PotentialIntegrator:
             Integral value.
         '''
         sim = self.potential.sim
-        r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
+        if r_taylor is None:
+            r_taylor = (numpy.linalg.norm(g1.width) * g1.centre[t] - g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (numpy.linalg.norm(g1.width) - g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
@@ -321,7 +324,6 @@ class PotentialIntegrator:
             ux2g[i] = intor.int_request(sim, 'int_ux2g', g1, g2, t, index, i, m=ug, useM=True)
             for j in range(sim.dim):
                 ux3g[i,j] = intor.int_request(sim, 'int_ux3g', g1, g2, t, i, j, index, useM=True)
-                print(f"Indices : {i}, {j}, {index}; Value : {ux3g[i,j]}")
         v0 = v_const * uxg
         v1 = ux2g - uxg * r_taylor
         v2 = ux3g - numpy.einsum('k,m->mk', r_taylor, ux2g) - numpy.einsum('m,k->mk', r_taylor, ux2g) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * uxg
@@ -341,22 +343,10 @@ class PotentialIntegrator:
         
         v1v = numpy.dot(grad, v1)
         v2v = numpy.einsum('ij,ji->', hess, v2)
-        print(f"V0 : {v0}")
-        print(f"V1 : {v1}")
-        print(f"V2 : {v2}")
-        print(f"Const : {v_const}")
-        print(f"Grad : {grad}")
-        print(f"Hess : {hess}")
-        print(f"R Taylor : {r_taylor}")
-        print(f"Centre 1 : {g1.centre[t]}")
-        print(f"Centre 2 : {g2.centre[t]}")
-        print(f"uxg : {uxg}")
-        print(f"ux2g : {ux2g}")
-        print(f"ux3g : {ux3g}")
 
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
     
-    def _int_vVg(self, g1, g2, t, vindex):
+    def _int_vVg(self, g1, g2, t, vindex, r_taylor=None):
         '''
         Integral of the function v1 * V * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
 
@@ -377,7 +367,8 @@ class PotentialIntegrator:
             Integral value.
         '''
         sim = self.potential.sim
-        r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+        if r_taylor is None:
+            r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
@@ -394,7 +385,7 @@ class PotentialIntegrator:
 
         return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
     
-    def _int_vVxg(self, g1, g2, t, vindex, index):
+    def _int_vVxg(self, g1, g2, t, vindex, index, r_taylor=None):
         '''
         Integral of the function v1 * V * x_(index) * g2. v1 is the v-dual function of the Gaussian g1 with directional index vindex.
 
@@ -417,7 +408,8 @@ class PotentialIntegrator:
             Integral value.
         '''
         sim = self.potential.sim
-        r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+        if r_taylor is None:
+            r_taylor = (- g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)

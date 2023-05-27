@@ -91,6 +91,25 @@ class Wavepacket:
         '''
         return self.gauss_coeff[:,t].T
 
+    def get_d_coeffs(self, t):
+        '''
+        Getter for the differential of coefficients at a specific timestep t. If t is the last timestep, zero is returned
+
+        Parameters
+        ----------
+        t : int
+            Timestep at which the gaussian coefficient differential should be returned.
+
+        Returns
+        -------
+        gauss_d_coeff : 1D ndarray
+            Array of gaussian coefficient differentials at timestep t with shape (number of gaussians,)
+        '''
+        if t == self.sim.tsteps-1:
+            return numpy.zeros(len(self.gaussians))
+        elif t == 0:
+            return (self.get_coeffs(1) - self.get_coeffs(0)) / self.sim.tstep_val
+        return 0.5 * (self.get_coeffs(t+1) - self.get_coeffs(t-1)) / self.sim.tstep_val 
 
     def evaluate(self, x, t):
         '''

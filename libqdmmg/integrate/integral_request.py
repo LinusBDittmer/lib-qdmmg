@@ -155,7 +155,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
             int_gg_tensor[i] = int_atom_request('int_gg', wp.gaussians[i], g, t)
         return numpy.dot(coeffs, int_gg_tensor)
     elif rq == 'int_ovlp_gw':
-        return int_composite_request(sim, 'int_ovlp_wg', args[1], args[0], t, kwargs).conj()
+        return int_composite_request(sim, 'int_ovlp_wg', args[1], args[0], t, **kwargs).conj()
     elif rq == 'int_ovlp_ww':
         wp1 = args[0]
         wp2 = args[1]
@@ -176,7 +176,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         dovlp_vec1 = gxg - g2.centre[t] * gg
         dovlp1 = 2 * numpy.dot(g2.width*g2.d_centre[t], dovlp_vec1)
         dovlp2 = numpy.dot(g2.d_momentum[t], gxg)
-        return dovlp1 + 1j*(dovlp2 + g2.phase[t]*gg)
+        return dovlp1 + 1j*(dovlp2 + g2.d_phase[t]*gg)
     elif rq == 'int_dovlp_wg':
         wp = args[0]
         g1 = args[1]
@@ -190,9 +190,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         wp = args[1]
         coeffs = wp.get_coeffs(t)
         coeffs_t = numpy.copy(coeffs)
-        if t < sim.tsteps:
-            coeffs_t = wp.get_coeffs(t+1)
-        d_coeffs = (coeffs_t - coeffs) / sim.tstep_val
+        d_coeffs = wp.get_d_coeffs(t)
         int_val = 0.0
         for i in range(len(coeffs)):
             int_val += d_coeffs[i] * int_atom_request('int_gg', g1, wp.gaussians[i], t) + coeffs[i] * int_composite_request(sim, 'int_dovlp_gg', g1, wp.gaussians[i], t)

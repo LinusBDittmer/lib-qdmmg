@@ -90,6 +90,20 @@ class Logger:
             self.print_header()
             print(msg)
 
+    def important(self, msg):
+        '''
+        Log important message. This is printed if _verbose is not 0 (SILENT).
+        
+        Parameters
+        ----------
+        msg : object
+            Message to be printed. This can be any datatype that can be converted to a string via str(...)
+        '''
+        msg = str(msg)
+        if self._verbose > SILENT:
+            self.print_header()
+            print(msg)
+
     def error(self, msg, exitCode=0):
         '''
         Log error message. This is only printed if _verbose is at least 1 (ERROR). Note that if an exit code is given, the program is not terminated directly.

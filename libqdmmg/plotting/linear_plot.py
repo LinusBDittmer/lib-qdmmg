@@ -16,7 +16,7 @@ def linear_plots(*prop, **kwargs):
     xlim = None if not 'xlim' in kwargs else kwargs['xlim']
     ylim = None if not 'ylim' in kwargs else kwargs['ylim']
     title = '' if not 'title' in kwargs else kwargs['title']
-    name = "test" if not 'name' in kwargs else kwargs['name']
+    name = "test_prop" if not 'name' in kwargs else kwargs['name']
     sim = prop[0].sim
 
     fig, axs = plt.subplots(get_plot_num(*prop), 1, sharex=sharex, figsize=figsize)
