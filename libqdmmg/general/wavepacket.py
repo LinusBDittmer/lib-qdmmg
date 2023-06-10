@@ -67,12 +67,16 @@ class Wavepacket:
                 self.logger.warn("Significant complex phase in coefficient detected. Phase should be exported to basis and coeffs kept real. Phase is discarded.")
         if self.gauss_coeff.size == 0:
             self.gauss_coeff = numpy.ones((1, self.sim.tsteps))
+            for t in range(self.sim.tsteps):
+                ovlp_gg = intor.int_request(self.sim, 'int_ovlp_gg', g1, g1, t)
+                self.gauss_coeff[:,t] /= numpy.sqrt(ovlp_gg.real)
         else:
             for t in range(self.sim.tsteps):
-                self.gauss_coeff[:,t] *= numpy.sqrt(1 - coeff[t].real*coeff[t].real)
+                ovlp_gg = intor.int_request(self.sim, 'int_ovlp_gg', g1, g1, t)
+                ovlp_gw = intor.int_request(self.sim, 'int_ovlp_gw', g1, self, t)
+                b_coeff = -coeff[t] * ovlp_gw.real + numpy.sqrt(coeff[t]*coeff[t]*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+                self.gauss_coeff[:,t] *= b_coeff.real
             self.gauss_coeff = numpy.append(self.gauss_coeff, numpy.array([coeff.real]), axis=0)
-        for t in range(self.sim.tsteps):
-            self.gauss_coeff[:,t] /= abs(numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_ww', self, self, t)))
 
     def get_coeffs(self, t):
         '''

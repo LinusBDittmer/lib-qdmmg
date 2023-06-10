@@ -8,6 +8,7 @@ Central class for Lib-QDMMG
 import libqdmmg.general as gen
 import libqdmmg.potential as pot
 import libqdmmg.simulate as sim
+import libqdmmg.integrate as intor
 
 import numpy
 
@@ -25,8 +26,9 @@ class Simulation:
         self.d_active_coeffs = None
         self.active_gaussian = None
         self.potential = None
-        self.eom_master = sim.EOM_Master(self)
-        self.eom_intor = sim.EOM_AdamsBashforth(self, order=4)
+        self.eom_master = sim.EOM_Master(self, qcutoff=0.5)
+        self.eom_intor = sim.EOM_AdamsBashforth(self, order=3)
+        #self.eom_intor = sim.EOM_Pade(self, m_order=2, n_order=2)
         self.generations = generations
         self.bounding_box = 1000
         self.logger.debug3("Initialised Simulation object at " + str(self))
@@ -45,10 +47,13 @@ class Simulation:
             self.active_gaussian.step_forward(t)
             cnew = self.eom_intor.next_coefficient(self.active_coeffs, self.d_active_coeffs, t)
             # Smoothmax clampling to avoid blowout
-            b = 50.0
-            a = 0.999
-            cnew = numpy.log(numpy.exp(b*cnew) + numpy.exp(-b*a)) / b
-            cnew = -numpy.log(numpy.exp(-b*cnew) + numpy.exp(-b*a)) / b
+            #b = 50.0
+            # Get overlap for maximum influence coeff
+            a = 1.0 / numpy.sqrt(intor.int_request(self, 'int_gg', self.active_gaussian, self.active_gaussian, 0))
+            # Hardmax clamping
+            cnew = max(-a, min(cnew, a))
+            #cnew = numpy.log(numpy.exp(b*cnew) + numpy.exp(-b*a)) / b
+            #cnew = -numpy.log(numpy.exp(-b*cnew) + numpy.exp(-b*a)) / b
             self.active_coeffs[t+1] = cnew
             if (abs(self.active_gaussian.centre[t]) > self.bounding_box).any():
                 self.logger.warn("Gaussian left relevant Bounding box and is discarded")
@@ -58,7 +63,7 @@ class Simulation:
     def step_forward_initial(self, t):
         self.active_gaussian.step_forward(t)
 
-    def run_timesteps(self, generation=0, strikes=0, isInitial=False):
+    def run_timesteps(self, generation=0, isInitial=False):
         self.logger.info("Beginning timestepping sequence.\n")
         self.logger.info("Total number of timesteps:     " + str(self.tsteps))
         self.logger.info("Timestep interval:             " + str(self.tstep_val) + " (" + str(round(self.tstep_val * 0.02418843265857, 5)) + " fs)\n\n")
@@ -66,12 +71,11 @@ class Simulation:
         for t in range(self.tsteps):
             self.logger.important("Iteration " + str(t) + " | Generation " + str(generation))
             self.logger.info("t = " + str(round(t * self.tstep_val * 0.02418843265857, 5)) + " fs")
-            self.logger.info("Strikes: " + str(strikes))
             if t < self.tsteps-1:
                 self.eom_master.prepare_next_step(t, isInitial)
                 abortion = self.step_forward(t, isInitial)
                 if abortion:
-                    return t-5
+                    return False
                 if not isInitial:
                     self.logger.info("")
                     self.logger.info("Influence coefficient:")
@@ -86,10 +90,12 @@ class Simulation:
                         break
                     '''
             self.logger.info("\n\n")
-        return self.tsteps
+        return True
 
-    def random_array(self, lower, upper, symmetric=False):
+    def random_array(self, lower, upper, symmetric=False, normal=False):
         r = (numpy.random.rand(self.dim) * (upper-lower)) + lower
+        if normal:
+            r = max(numpy.random.normal(lower, upper), 0.0)
         if not symmetric:
             return r
         return numpy.random.choice(numpy.array([-1, 1]), self.dim) * r
@@ -102,10 +108,12 @@ class Simulation:
                     widthsquare[w] = 0.1
             width = numpy.sqrt(widthsquare)
             return gen.Gaussian(self, centre=numpy.zeros(self.dim), width=width)
-        centre = self.random_array(0.75, 1.25, symmetric=True) * self.previous_wavefunction.gaussians[0].width
-        width = self.random_array(1.0, 1.5) * self.previous_wavefunction.gaussians[0].width
-        coeff = min(max(numpy.exp(-(self.potential.evaluate(centre)-self.potential.evaluate(numpy.zeros(self.dim)))*2), 0.1), 0.9)
-        return gen.Gaussian(self, centre=centre, width=width), coeff
+        centre = self.random_array(0.05, 0.05, symmetric=True, normal=True) / numpy.sqrt(self.previous_wavefunction.gaussians[0].width)
+        width = numpy.sqrt(self.previous_wavefunction.gaussians[0].width) * self.random_array(0.5, 1.0)
+        gaussian = gen.Gaussian(self, centre=centre, width=width)
+        coeff = 1.0 / (len(self.previous_wavefunction.gaussians)+1)
+        #coeff = min(max(numpy.exp(-gaussian.energy_tot(0)*100), 0.01), 0.99)
+        return gaussian, coeff
 
     def gen_wavefunction(self):
         # Main executable function for generation of the final wavefunction
@@ -119,24 +127,17 @@ class Simulation:
         # Binding first gaussian to wavepackt
         self.previous_wavefunction = gen.Wavepacket(self)
         self.previous_wavefunction.bind_gaussian(self.active_gaussian.copy(), numpy.ones(self.tsteps))
-        gaussian_strikes = 0
         generation = 0
         while generation < self.generations:
-            if gaussian_strikes > 15:
-                break
             # Generate next gaussian
             self.active_coeffs = numpy.zeros(self.tsteps)
             self.active_gaussian, self.active_coeffs[0] = self.generate_new_gaussian() 
             self.d_active_coeffs = numpy.zeros(self.tsteps)
             # Timestepping
-            accept_gaussian = self.run_timesteps(generation=generation+1, strikes=gaussian_strikes)
+            accept_gaussian = self.run_timesteps(generation=generation+1)
             # Binding new gaussian
-            if accept_gaussian <= 0:
-                gaussian_strikes += 1
-            else:
+            if accept_gaussian:
                 ac = numpy.copy(self.active_coeffs)
-                if accept_gaussian < self.tsteps:
-                    ac[accept_gaussian:] = 0.0 
                 self.previous_wavefunction.bind_gaussian(self.active_gaussian.copy(), ac)
                 generation += 1
             # Check convergence

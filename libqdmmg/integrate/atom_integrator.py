@@ -6,9 +6,9 @@ This script contains the explicit formulas for the analytical integrals describe
 '''
 
 import numpy
-from functools import reduce
+from functools import reduce, cache
 
-
+@cache
 def int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase):
     '''
     This function calculates the integral of the product of two gaussians over all space.
@@ -100,7 +100,7 @@ def int_gxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
     cval = g1width[index] + g2width[index]
     vval = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     if not useM:
-        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.5 * m * vval / cval
 
 def int_gx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
@@ -151,7 +151,7 @@ def int_gx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     c1 = 1.0 / (g1width[index1] + g2width[index1])
     c2 = 1.0 / (g1width[index2] + g2width[index2])
     if not useM:
-        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return (0.25 * v1 * v2 * c1 * c2) * m
 
 def int_gx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
@@ -198,7 +198,7 @@ def int_gx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     c = 1.0 / (g1width[index] + g2width[index])
     if not useM:
-       m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+       m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return (0.25 * v * v * c * c + 0.5 * c) * m
 
 def int_gx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, index3, m=0.0, useM=False):
@@ -249,7 +249,7 @@ def int_gx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentu
     v1 = (2 * g1width * g1centre + 2 * g2width * g2centre + 1j*(g2momentum - g1momentum)) / (g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
-        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.125 * val * m
 
 def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
@@ -300,7 +300,7 @@ def int_gx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     c1 = 1.0 / (g1width[index1] + g2width[index1])
     c2 = 1.0 / (g1width[index2] + g2width[index2])
     if not useM:
-        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.25 * (v1*c1*c2 + 0.5*v1*v2*v2*c1*c2*c2) * m
 
 def int_gx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
@@ -347,10 +347,11 @@ def int_gx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     v = 2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j*(g2momentum[index] - g1momentum[index])
     c = 1.0 / (g1width[index] + g2width[index])
     if not useM:
-        m = int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_gg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.25 * (3*v*c*c + 0.25*v*v*v*c*c*c) * m
 
 
+@cache
 def int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase):
     '''
     This function calculates the integral of the function u1 * g2 over all of space where u1 is the u dual function to g1.
@@ -441,7 +442,7 @@ def int_uxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
     c_inv = 1.0 / (c2 + g2width[index])
     p = 2 * c2 * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j * g2momentum[index]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.5 * p * c_inv * m
 
 def int_ux2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
@@ -495,7 +496,7 @@ def int_ux2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     p1 = 2*c1*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
     p2 = 2*c2*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j*g2momentum[index2]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return (0.25*p1*p2*c_inv1*c_inv2) * m
 
 def int_ux2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
@@ -544,7 +545,7 @@ def int_ux2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     c_inv = 1.0 / (c + g2width[index])
     p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return (0.25*p*p*c_inv*c_inv + 0.5 * c_inv) * m
 
 def int_ux3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, m=0.0, useM=False):
@@ -597,7 +598,7 @@ def int_ux3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     p1 = 2*gn*g1centre[index1] - 2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
     p2 = 2*gn*g1centre[index2] - 2*g1width[index2]*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j*g2momentum[index2]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.25 * (p1 * c_inv1 * c_inv2 + 0.5 * p1 * p2 * p2 * c_inv1 * c_inv2 * c_inv2) * m
 
 def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index, m=0.0, useM=False):
@@ -646,7 +647,7 @@ def int_ux3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     c_inv = 1.0 / (c + g2width[index])
     p = 2*c*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.25 * (3*p*c_inv*c_inv + 0.5 * p*p*p*c_inv*c_inv*c_inv) * m
 
 def int_ux3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, index1, index2, index3, m=0.0, useM=False):
@@ -698,9 +699,11 @@ def int_ux3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentu
     v1 = (2 * numpy.linalg.norm(g1width) * g1centre - 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (numpy.linalg.norm(g1width) - g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
-        m = int_ug(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase)
+        m = int_ug(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase)
     return 0.125 * val * m
 
+
+@cache
 def int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex):
     '''
     This function calculates the integral of the function v1_(vindex) * g2 over all of space where v1_(vindex) is the v dual function to g1 in the direction with index vindex.
@@ -790,7 +793,7 @@ def int_vxg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phas
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2 * g1width[index] * g1centre[index] + 2 * g2width[index] * g2centre[index] + 1j * g2momentum[index]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return 0.5 * p * c_inv * m
 
 def int_vx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index1, index2, m=0.0, useM=False):
@@ -842,7 +845,7 @@ def int_vx2g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     p1 = -2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
     p2 = -2*g1width[index2]*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j+g2momentum[index2]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return (0.25*p1*p2*c_inv1*c_inv2) * m
 
 def int_vx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index, m=0.0, useM=False):
@@ -891,7 +894,7 @@ def int_vx2g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2*g1width[index]*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return (0.25*p*p*c_inv*c_inv + 0.5*c_inv) * m
 
 def int_vx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index1, index2, m=0.0, useM=False):
@@ -944,7 +947,7 @@ def int_vx3g_mixed(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum,
     p1 = -2*g1width[index1]*g1centre[index1] + 2*g2width[index1]*g2centre[index1] + 1j*g2momentum[index1]
     p2 = -2*g1width[index2]*g1centre[index2] + 2*g2width[index2]*g2centre[index2] + 1j+g2momentum[index2]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return 0.25 * (p1*c_inv1*c_inv2 + 0.5*p1*p2*p2*c_inv1*c_inv2*c_inv2) * m
 
 def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index, m=0.0, useM=False):
@@ -993,7 +996,7 @@ def int_vx3g_diag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, 
     c_inv = 1.0 / (g1width[index] + g2width[index])
     p = -2*g1width[index]*g1centre[index] + 2*g2width[index]*g2centre[index] + 1j*g2momentum[index]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return 0.25 * (3*p*c_inv*c_inv + 0.5*p*p*p*c_inv*c_inv*c_inv) * m
 
 def int_vx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex, index1, index2, index3, m=0.0, useM=False):
@@ -1006,5 +1009,5 @@ def int_vx3g_offdiag(g1width, g2width, g1centre, g2centre, g1momentum, g2momentu
     v1 = (- 2 * g1width * g1centre + 2 * g2width * g2centre + 1j*g2momentum) / (g1width + g2width)
     val = v1[index1] * v1[index2] * v1[index3]
     if not useM:
-        m = int_vg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase, g2phase, vindex)
+        m = int_vg(tuple(g1width), tuple(g2width), tuple(g1centre), tuple(g2centre), tuple(g1momentum), tuple(g2momentum), g1phase, g2phase, vindex)
     return 0.125 * val * m

@@ -45,10 +45,12 @@ class DoubleQuadraticWell(Potential):
 
     def gradient(self, x):
         x = numpy.array(x) - self.shift
+        return self.num_gradient(x)
         return 4 * self.quartic * x*x*x + 3 * self.cubic * x*x + 2 * self.quadratic * x + self.linear
 
     def hessian(self, x):
         x = numpy.array(x) - self.shift
+        return self.num_hessian(x)
         h = 12 * self.quartic * x*x + 6 * self.cubic * x + 2 * self.quadratic
         return numpy.diag(h)
 

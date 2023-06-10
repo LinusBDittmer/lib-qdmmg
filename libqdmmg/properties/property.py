@@ -68,11 +68,13 @@ class PotentialEnergy(Property):
 
     def compute1D(self, obj, t):
         obj = self.wavepacketify(obj)
+        return obj.energy_pot(t)
         bounds = [-100, 100]
         return scipy.integrate.quad(self.integrand1D, bounds[0], bounds[1], args=(obj, t))[0]
 
     def computeND(self, obj, t):
         obj = self.wavepacketify(obj)
+        return obj.energy_pot(t)
         bounds = [[-100, 100]] * self.sim.dim
         self._obj = obj
         self._t = t

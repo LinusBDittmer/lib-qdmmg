@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 
 def density_plots(wp, **kwargs):
     res = 100 if not 'res' in kwargs else kwargs['res']
-    dist = 2.5 if not 'dist' in kwargs else kwargs['dist']
+    dist = 5.0 if not 'dist' in kwargs else kwargs['dist']
     name = "test" if not 'name' in kwargs else kwargs['name']
     drawtype = "amplitude" if not 'drawtype' in kwargs else kwargs['drawtype']
     amptype = "real" if not 'amptype' in kwargs else kwargs['amptype']
 
-    fig, axs = plt.subplots(1, wp.sim.dim, figsize=(6,6*wp.sim.dim))
+    fig, axs = plt.subplots(1, wp.sim.dim, figsize=(6*wp.sim.dim,10))
     c = None
     if wp.sim.dim == 1:
         axs = tuple([axs])

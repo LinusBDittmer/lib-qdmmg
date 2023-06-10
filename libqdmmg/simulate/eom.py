@@ -28,15 +28,19 @@ def eom_init_phase(sim, pot, g, t):
     return dg0 + dg1 + dg2
 
 def eom_centre(sim, pot, g1, t):
-    return eom_init_centre(sim, pot, g1, t)
+    #return eom_init_centre(sim, pot, g1, t)
     wp = sim.previous_wavefunction
     wp_size = len(wp.gaussians)
     logger = sim.logger
-    a_coeff = sim.active_coeffs[t]
-    b_coeff = numpy.sqrt(1 - a_coeff*a_coeff)
     wp_coeff = wp.get_coeffs(t)
     wp_d_coeff = wp.get_d_coeffs(t)
     pot_intor = pot.gen_potential_integrator()
+
+    ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g1, g1, t)
+    ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g1, wp, t)
+    a_coeff = sim.active_coeffs[t]
+    b_coeff = -a_coeff * ovlp_gw.real + numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+    b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
 
     # Simplification of potential electronic structure calls
     r_taylor = None
@@ -101,8 +105,8 @@ def eom_centre(sim, pot, g1, t):
     '''
 
     # Self-contribution term
-    self_cont = g1.momentum[t] / (a_coeff * pot.reduced_mass)
-
+    self_cont = g1.momentum[t] / pot.reduced_mass
+    
     # Correctional contributions
 
     # External contribution 1: Correction by crossover with previous time derivative
@@ -176,8 +180,11 @@ def eom_centre(sim, pot, g1, t):
     ext_cont3 = 2 * numpy.einsum('n,l,nl->l', wp_coeff, 1/g1.width, int_linear_shift.real)
     '''
 
-    correction3 = 0.25 * d_a_coeff / b_coeff * (ext_cont3 + ext_cont3.conj())
+    correction3 = 0.25 * d_a_coeff * b_breve / a_coeff * (ext_cont3 + ext_cont3.conj())
+    
+    total_correction = correction1 + correction2 + correction3
 
+    logger.debug3("Centre")
     logger.debug3(f"Ext Cont 1 : {2*ext_cont1.real}")
     logger.debug3(f"Ext Cont 2 : {2*ext_cont2.imag}")
     logger.debug3(f"Ext Cont 3 : {ext_cont3.real}")
@@ -188,19 +195,24 @@ def eom_centre(sim, pot, g1, t):
     logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
 
     #return eom_init_centre(sim, pot, g1, t)
-    return (self_cont + correction1 + correction2 + correction3).real
+    return self_cont.real, total_correction.real
 
 
 def eom_momentum(sim, pot, g1, t):
-    return eom_init_momentum(sim, pot, g1, t)
+    #return eom_init_momentum(sim, pot, g1, t)
     wp = sim.previous_wavefunction
     wp_size = len(wp.gaussians)
     logger = sim.logger
-    a_coeff = sim.active_coeffs[t]
-    b_coeff = numpy.sqrt(1 - a_coeff*a_coeff)
     wp_coeff = wp.get_coeffs(t)
     wp_d_coeff = wp.get_d_coeffs(t)
     pot_intor = pot.gen_potential_integrator()
+
+    ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g1, g1, t)
+    ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g1, wp, t)
+    a_coeff = sim.active_coeffs[t]
+    b_coeff = -a_coeff * ovlp_gw.real + numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+    b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+
 
     # Simplification of potential electronic structure calls
     r_taylor = None
@@ -249,8 +261,8 @@ def eom_momentum(sim, pot, g1, t):
                 int_vx3g_tensor[g,i,j] = intor.int_request(sim, 'int_vx3g', g1, g2, t, 0, i, j, j, m=int_vg_tensor[g], useM=True)
 
     # Self contribution
-    self_cont = 0.5 * (pot.gradient(r_taylor) - numpy.einsum('ll,l->l', pot.hessian(r_taylor), r_taylor))
-    
+    self_cont = (-4 * g1.width*g1.width * g1.centre[t] / pot.reduced_mass - pot.gradient(g1.centre[t]) + numpy.einsum('ll,l->l', pot.hessian(g1.centre[t]), g1.centre[t]))
+
     # Contribution by crossover with previous time derivative
     ext_cont1 = numpy.zeros(sim.dim, dtype=numpy.complex128)
     ext_cont1 += 1 / g1.width[0] * numpy.einsum('n,l,nl->l', wp_d_coeff, g1.width, int_vxg_tensor)
@@ -290,21 +302,47 @@ def eom_momentum(sim, pot, g1, t):
 
     ext_cont3 = numpy.einsum('n,nl->l', wp_coeff, int_vxg_tensor)
 
-    correction3 = -0.5j * d_a_coeff / b_coeff * (ext_cont3 - ext_cont3.conj())
+    correction3 = -0.5j * d_a_coeff * b_breve / a_coeff * (ext_cont3 - ext_cont3.conj())
 
-    return eom_init_momentum(sim, pot, g1, t)
-    return (self_cont + correction1 + correction2 + correction3).real
+    total_correction = correction1 + correction2 + correction3
+
+    logger.debug3("Momentum:")
+    logger.debug3(f"wp_d_coeff : {wp_d_coeff}")
+    logger.debug3(f"g1width : {g1.width}")
+    logger.debug3(f"d_centre_tensor : {d_centre_tensor}")
+    logger.debug3(f"d_momentum_tensor : {d_momentum_tensor}")
+    logger.debug3(f"d_phase_tensor : {d_phase_tensor}")
+    logger.debug3(f"int_vg_tensor : {int_vg_tensor}")
+    logger.debug3(f"int_vxg_tensor : {int_vxg_tensor}")
+    logger.debug3(f"inv_vVxg_tensor : {int_vVxg_tensor}")
+    logger.debug3(f"wp_coeff : {wp_coeff}")
+    logger.debug3(f"Ext Cont 1 : {2*ext_cont1.real}")
+    logger.debug3(f"Ext Cont 2 : {2*ext_cont2.imag}")
+    logger.debug3(f"Ext Cont 3 : {ext_cont3.real}")
+    logger.debug3(f"Correction 1 : {correction1}")
+    logger.debug3(f"Correction 2 : {correction2}")
+    logger.debug3(f"Correction 3 : {correction3}")
+    logger.debug3(f"Corrective sum : {correction1+correction2+correction3}")
+    logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
+
+
+    return self_cont.real, total_correction.real
 
 def eom_phase(sim, pot, g1, t):
-    return eom_init_phase(sim, pot, g1, t)
+    #return eom_init_phase(sim, pot, g1, t)
     wp = sim.previous_wavefunction
     wp_size = len(wp.gaussians)
     logger = sim.logger
-    a_coeff = sim.active_coeffs[t]
-    b_coeff = numpy.sqrt(1 - a_coeff*a_coeff)
     wp_coeff = wp.get_coeffs(t)
     wp_d_coeff = wp.get_d_coeffs(t)
     pot_intor = pot.gen_potential_integrator()
+
+    ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g1, g1, t)
+    ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g1, wp, t)
+    a_coeff = sim.active_coeffs[t]
+    b_coeff = -a_coeff * ovlp_gw.real + numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+    b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+
 
     # Simplification of potential electronic structure calls
     r_taylor = None
@@ -352,8 +390,9 @@ def eom_phase(sim, pot, g1, t):
             int_vx2g_tensor[g,i] = intor.int_request(sim, 'int_vx2g', g1, g2, t, 0, i, i, m=int_vg_tensor[g], useM=True)
 
     # Self contribution
-    self_cont = numpy.dot(g1.width, 1/pot.reduced_mass) + 0.5 * numpy.dot(4*g1.width*g1.width*g1.centre[t]*g1.centre[t] - 2*g1.width - g1.momentum[t]*g1.momentum[t], 1/pot.reduced_mass)
-    self_cont += -e_pot + numpy.dot(grad, r_taylor) - 0.5 * numpy.einsum('i,ij,j->', r_taylor, hess, r_taylor) - 0.0625 * numpy.dot(numpy.diag(hess), 1/g1.width)
+    self_cont = 0.5 * numpy.dot(4*g1.width*g1.width*g1.centre[t]*g1.centre[t] - g1.momentum[t]*g1.momentum[t], 1/pot.reduced_mass)
+    self_cont -= pot.evaluate(g1.centre[t]) + numpy.dot(pot.gradient(g1.centre[t]), g1.centre[t]) + 0.5 * numpy.einsum('i,j,ij->', g1.centre[t], g1.centre[t], pot.hessian(g1.centre[t]))
+    self_cont -= 0.25 * numpy.dot(numpy.diag(pot.hessian(g1.centre[t])), 1/g1.width)
 
     # First correction
     ext_cont1 = numpy.dot(wp_d_coeff, int_vg_tensor)
@@ -392,15 +431,26 @@ def eom_phase(sim, pot, g1, t):
     # Third correction
     ext_cont3 = numpy.dot(wp_coeff, int_vg_tensor)
 
-    correction3 = -0.25j * d_a_coeff / (b_coeff * g1.width[0]) * (ext_cont3 - numpy.conj(ext_cont3))
+    correction3 = -0.25j * d_a_coeff * b_breve / (a_coeff * g1.width[0]) * (ext_cont3 - numpy.conj(ext_cont3))
+
+    total_correction = correction1 + correction2 + correction3
+
+    logger.debug3("Phase")
+    logger.debug3(f"Ext Cont 1 : {2*ext_cont1.real}")
+    logger.debug3(f"Ext Cont 2 : {2*ext_cont2.imag}")
+    logger.debug3(f"Ext Cont 3 : {ext_cont3.real}")
+    logger.debug3(f"Correction 1 : {correction1}")
+    logger.debug3(f"Correction 2 : {correction2}")
+    logger.debug3(f"Correction 3 : {correction3}")
+    logger.debug3(f"Corrective sum : {correction1+correction2+correction3}")
+    logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
 
     #return eom_init_phase(sim, pot, g1, t)
-    return (self_cont + correction1 + correction2 + correction3).real
+    return self_cont.real, total_correction.real
 
 def eom_coefficient(sim, pot, g, t):
     wp = sim.previous_wavefunction
     logger = sim.logger
-    a_coeff = sim.active_coeffs[t]
     pot_intor = pot.gen_potential_integrator()
     ovlp_gg = intor.int_request(sim, 'int_ovlp_gg', g, g, t)
     ovlp_gw = intor.int_request(sim, 'int_ovlp_gw', g, wp, t)
@@ -413,19 +463,29 @@ def eom_coefficient(sim, pot, g, t):
     e_wp = wp.energy_tot(t)
     e_coupling = intor.int_request(sim, 'int_kinetic_gw', g, wp, t)
     e_coupling += pot_intor.int_request('int_gVw', g, wp, t)
-    b_coeff = numpy.sqrt(1 - a_coeff*a_coeff)
-    ab_ratio = a_coeff / b_coeff
 
-    a_term = dovlp_gg + dovlp_wg + 1j*(e_g - ab_ratio * e_coupling.conj())
-    b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - ab_ratio * e_wp)
-    inv_term = 2 * ab_ratio * ovlp_gw.real - ovlp_gg - ab_ratio*ab_ratio
+    a_coeff = sim.active_coeffs[t]
+    b_coeff = -a_coeff * ovlp_gw.real + numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+    b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
 
+    a_term = dovlp_gg + dovlp_wg + 1j*(e_g - b_breve * e_coupling.conj())
+    b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - b_breve * e_wp)
+    inv_term = 2 * b_breve * ovlp_gw.real - ovlp_gg - b_breve * b_breve
+
+    logger.debug3(f"Eg          : {e_g}")
+    logger.debug3(f"Ewp         : {e_wp}")
+    logger.debug3(f"E coupl     : {e_coupling}")
     logger.debug3(f"A Term      : {a_term}")
+    logger.debug3(f"D Ovlp gg   : {dovlp_gg}")
+    logger.debug3(f"D Ovlp wg   : {dovlp_wg}")
     logger.debug3(f"B Term      : {b_term}")
     logger.debug3(f"A           : {a_coeff}")
     logger.debug3(f"B           : {b_coeff}")
     logger.debug3(f"Inv Term    : {inv_term}")
-    logger.debug3(f"AB Ratio    : {ab_ratio}")
+    logger.debug3(f"B Breve     : {b_breve}")
+
+    norm = a_coeff*a_coeff*ovlp_gg + 2*a_coeff*b_coeff*ovlp_gw.real + b_coeff*b_coeff
+    logger.debug3(f"Norm        : {norm}")
 
     d_coeff = ((a_coeff * a_term + b_coeff * b_term) / inv_term).real
     logger.debug3(f"Coefficient differential : {d_coeff}")

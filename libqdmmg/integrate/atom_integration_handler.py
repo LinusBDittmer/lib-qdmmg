@@ -7,6 +7,7 @@ This script functions as a wrapper to handle analytical integration. It unpacks 
 
 '''
 
+import numpy
 import libqdmmg.integrate.atom_integrator as atom_intor
 
 def int_gg(g1, g2, t):
@@ -27,7 +28,10 @@ def int_gg(g1, g2, t):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t])
+    i = atom_intor.int_gg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t])
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_gxg(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -53,7 +57,11 @@ def int_gxg(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_gxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
+
 
 def int_gx2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -81,7 +89,11 @@ def int_gx2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    i = atom_intor.int_gx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
+
 
 def int_gx2g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -107,7 +119,11 @@ def int_gx2g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_gx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
+
 
 def int_gx3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -135,7 +151,11 @@ def int_gx3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    i = atom_intor.int_gx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
+
 
 def int_gx3g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -161,7 +181,10 @@ def int_gx3g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_gx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_gx3g_offdiag(g1, g2, t, index1, index2, index3, m=0.0, useM=False):
     '''
@@ -191,7 +214,10 @@ def int_gx3g_offdiag(g1, g2, t, index1, index2, index3, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_gx3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, index3, m, useM)
+    i = atom_intor.int_gx3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, index3, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ug(g1, g2, t):
     '''
@@ -211,7 +237,10 @@ def int_ug(g1, g2, t):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ug(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t])
+    i = atom_intor.int_ug(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t])
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_uxg(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -237,7 +266,10 @@ def int_uxg(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_uxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_uxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ux2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -263,7 +295,10 @@ def int_ux2g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ux2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    i = atom_intor.int_ux2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ux2g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -289,7 +324,10 @@ def int_ux2g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ux2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_ux2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ux3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     '''
@@ -317,7 +355,10 @@ def int_ux3g_mixed(g1, g2, t, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ux3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    i = atom_intor.int_ux3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ux3g_diag(g1, g2, t, index, m=0.0, useM=False):
     '''
@@ -343,7 +384,10 @@ def int_ux3g_diag(g1, g2, t, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ux3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    i = atom_intor.int_ux3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_ux3g_offdiag(g1, g2, t, index1, index2, index3, m=0.0, useM=False):
     '''
@@ -373,7 +417,10 @@ def int_ux3g_offdiag(g1, g2, t, index1, index2, index3, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_ux3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, index3, m, useM)
+    i = atom_intor.int_ux3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], index1, index2, index3, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vg(g1, g2, t, vindex):
     '''
@@ -393,7 +440,10 @@ def int_vg(g1, g2, t, vindex):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex)
+    i = atom_intor.int_vg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vxg(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
@@ -419,7 +469,10 @@ def int_vxg(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    i = atom_intor.int_vxg(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vx2g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     '''
@@ -447,7 +500,10 @@ def int_vx2g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    i = atom_intor.int_vx2g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vx2g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
@@ -473,7 +529,10 @@ def int_vx2g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    i = atom_intor.int_vx2g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vx3g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     '''
@@ -501,7 +560,10 @@ def int_vx3g_mixed(g1, g2, t, vindex, index1, index2, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    i = atom_intor.int_vx3g_mixed(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vx3g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     '''
@@ -527,7 +589,10 @@ def int_vx3g_diag(g1, g2, t, vindex, index, m=0.0, useM=False):
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    i = atom_intor.int_vx3g_diag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 def int_vx3g_offdiag(g1, g2, t, vindex, index1, index2, index3, m=0.0, useM=False):
     '''
@@ -557,6 +622,9 @@ def int_vx3g_offdiag(g1, g2, t, vindex, index1, index2, index3, m=0.0, useM=Fals
     int_val : complex128
         The value of the integral.
     '''
-    return atom_intor.int_vx3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, index3, m, useM)
+    i = atom_intor.int_vx3g_offdiag(tuple(g1.width), tuple(g2.width), tuple(g1.centre[t]), tuple(g2.centre[t]), tuple(g1.momentum[t]), tuple(g2.momentum[t]), g1.phase[t], g2.phase[t], vindex, index1, index2, index3, m, useM)
+    if numpy.isnan(i):
+        return 0.0
+    return i
 
 

@@ -21,7 +21,7 @@ kin_energy.kernel()
 pot_energy.kernel()
 tot_energy.kernel()
 displacement.kernel()
-
+print(tot_energy.values)
 
 plot.linear_plots(kin_energy, pot_energy, tot_energy, displacement, name='dqw_properties')
 plot.density_plots(s.get_wavefunction(), name='dqw_density', drawtype='density')

@@ -25,7 +25,6 @@ class HarmonicOscillator(Potential):
         return self.forces * x
 
     def hessian(self, x):
-        x = numpy.array(x)
         return numpy.diag(self.forces)
 
     def gen_potential_integrator(self):
