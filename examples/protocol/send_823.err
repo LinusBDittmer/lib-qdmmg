@@ -1,5 +1,0 @@
-/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/simulation.py:63: ComplexWarning: Casting complex values to real discards the imaginary part
-  self.active_coeffs[t+1] = cnew
-/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/integrate/_ode.py:1011: UserWarning: vode: Excess work done on this call. (Perhaps wrong MF.)
-  warnings.warn('{:s}: {:s}'.format(self.__class__.__name__,
-slurmstepd-Knecht05: error: *** JOB 823 ON Knecht05 CANCELLED AT 2023-07-07T11:29:31 ***
