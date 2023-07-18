@@ -1,0 +1,50 @@
+------------------------------------------------------
+Job is running on nodes
+    Knecht05
+------------------------------------------------------
+qsys: job was submitted from ccserv1
+qsys: originating queue is
+qsys: executing queue is
+qsys: original working directory is /export/home/ccprak16/Documents/Linus/MMG/workspace/examples/benchmarking/LiH2F3/geometry
+qsys: job identifier is 528
+qsys: job name is base
+qsys: current home directory is
+qsys: PATH =
+------------------------------------------------------
+
+Calculation working directory: /scratch/ccprak16/base_528
+            scratch directory: /lscratch/ccprak16/base_528
+
+------------------------------------------------------
+
+	Running on host without AVX support -> using generic version.
+
+	Your environment variables are now setup for use of Q-Chem.
+	You do not need to source qchem.setup.sh or qchem.setup.csh!
+
+	Do not forget to set variable QCSCRATCH to your 
+	preferred scratch directory!
+setting QC=/opt/software/Q-Chem/intel/mkl/6.0.2/generic
+setting QCAUX=/opt/software/Q-Chem/qcaux_qchem_6.0.2
+/opt/software/Q-Chem/intel/mkl/6.0.2/generic/exe/qcprog.exe .base.in.30448.qcin.1 /lscratch/ccprak16/base_528/qchem30448/
+
+------------------------------------------------------
+
+Final files in /export/home/ccprak16/Documents/Linus/MMG/workspace/examples/benchmarking/LiH2F3/geometry:
+    insgesamt 316
+    -rw-r--r-- 1 ccprak16 CompChem    388  4. Jul 16:11 base.in
+    -rw-r--r-- 1 ccprak16 CompChem   1963  4. Jul 14:02 base.o502
+    -rw-r--r-- 1 ccprak16 CompChem   1350  4. Jul 16:13 base.o528
+    -rw-r--r-- 1 ccprak16 CompChem 301178  4. Jul 16:13 base.out
+    -rw-r--r-- 1 ccprak16 CompChem   7515  4. Jul 16:11 base.sh
+
+More files can be found in /scratch/ccprak16/base_528 and /lscratch/ccprak16/base_528 on
+    Knecht05
+
+Sizes of these files:
+    4,0K	base.in
+    296K	base.out
+    300K	insgesamt
+
+If you want to delete these, run:
+    ssh Knecht05 rm -r "/scratch/ccprak16/base_528" "/lscratch/ccprak16/base_528"

@@ -1,0 +1,17 @@
+$molecule
+-1 1
+  O   -0.3174495    0.0719407   -0.0988942
+  H    0.7471196   -0.1474259    0.0060105
+  H   -0.3492505    0.9677168   -0.5207113
+  F    1.4446001   -0.8975617    0.3603570
+$end
+
+$rem
+jobtype opt
+method hf
+input_bohr true
+basis 6-31g
+threads 4
+mem_total 10000
+!QSYS wt=01:00:00
+$end

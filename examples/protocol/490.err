@@ -1,0 +1,6 @@
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:196: RuntimeWarning: invalid value encountered in divide
+  logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/properties/property.py:31: ComplexWarning: Casting complex values to real discards the imaginary part
+  self.values[t] = self.compute(obj, t)
+/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/matplotlib/cbook/__init__.py:1335: ComplexWarning: Casting complex values to real discards the imaginary part
+  return np.asarray(x, float)

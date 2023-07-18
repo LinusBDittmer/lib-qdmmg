@@ -147,6 +147,40 @@ class Wavepacket:
     def energy_tot(self, t):
         return self.energy_kin(t) + self.energy_pot(t)
 
+    def copy(self):
+        c = Wavepacket(self.sim)
+        c.gaussians = [None] * len(self.gaussians)
+        c.gauss_coeff = numpy.copy(self.gauss_coeff)
+        for i in range(len(self.gaussians)):
+            c.gaussians[i] = self.gaussians[i].copy()
+        return c
+
+    def zerotime_wp(self):
+        c = Wavepacket(self.sim)
+        c.gaussians = [None] * len(self.gaussians)
+        c.gauss_coeff = numpy.copy(self.gauss_coeff)
+        for i in range(len(self.gaussians)):
+            c.gauss_coeff[i] = numpy.array([self.gauss_coeff[i,0]] * self.sim.tsteps)
+            c.gaussians[i] = self.gaussians[i].copy()
+            c.gaussians[i].centre = numpy.array([self.gaussians[i].centre[0]] * self.sim.tsteps)
+            c.gaussians[i].momentum = numpy.array([self.gaussians[i].momentum[0]] * self.sim.tsteps)
+            c.gaussians[i].phase = numpy.array([self.gaussians[i].phase[0]] * self.sim.tsteps)
+        return c
+
+    def propagation_quality(self):
+        quality = numpy.zeros(self.sim.tsteps)
+        pot_intor = self.sim.potential.gen_potential_integrator()
+        for t in range(self.sim.tsteps):
+            tprop = intor.int_request(self.sim, 'int_dovlp_ww', self, self, t)
+            eprop = intor.int_request(self.sim, 'int_kinetic_ww', self, self, t)
+            eprop += pot_intor.int_request('int_wVw', self, self, t)
+            quality[t] = abs(1j * tprop - eprop)
+        return quality
+
+    def reset_coeffs(self):
+        self.gauss_coeff = numpy.zeros(self.gauss_coeff.shape, dtype=float)
+        self.gauss_coeff[0,0] = 1 / numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_gg', self.gaussians[0], self.gaussians[0], 0))
+
 if __name__ == '__main__':
     import libqdmmg.simulate as sim
     import libqdmmg.general as gen

@@ -17,6 +17,7 @@ class Property:
         self.logger = sim.logger
         self.descriptor = descriptor
         self.shape = shape
+        self.islog = False
         if shape == 0:
             self.values = numpy.zeros(sim.tsteps, dtype=dtype)
         else:
@@ -112,6 +113,15 @@ class AverageDisplacement(Property):
         for i, co in enumerate(coeffs):
             c += co*co * obj.gaussians[i].centre[t]
         return numpy.array(c)
+
+class Norm(Property):
+
+    def __init__(self, sim):
+        super().__init__(sim, "Norm", dtype=float)
+
+    def compute(self, obj, t):
+        obj = self.wavepacketify(obj)
+        return intor.int_request(self.sim, 'int_ovlp_ww', obj, obj, t)
 
 if __name__ == '__main__':
     import libqdmmg.simulate as sim

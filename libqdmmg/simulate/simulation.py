@@ -19,26 +19,32 @@ class Simulation:
         self.dim = dim
         self.tsteps = tsteps
         self.tstep_val = tstep_val
+        self.generations = generations
         self.logger = gen.new_logger(self)
+        self.bounding_box = 1000
 
         self.previous_wavefunction = None
         self.active_coeffs = None
         self.d_active_coeffs = None
         self.active_gaussian = None
         self.potential = None
-        self.eom_master = sim.EOM_Master(self, qcutoff=0.5)
-        self.eom_intor = sim.EOM_AdamsBashforth(self, order=3)
-        #self.eom_intor = sim.EOM_Pade(self, m_order=2, n_order=2)
-        self.generations = generations
-        self.bounding_box = 1000
+        self.eom_master = sim.EOM_Master(self, qcutoff=1.0)
+        #self.eom_intor = sim.EOM_AdamsBashforth(self, order=3)
+        self.eom_intor = sim.EOM_Matexp(self, order=1, auxorder=3)
+        self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
         self.logger.debug3("Initialised Simulation object at " + str(self))
 
-    def bind_potential(self, potential):
+    def bind_potential(self, potential, adapt_strategy=True):
         self.logger.debug2("Binding Potential...")
         assert isinstance(potential, pot.potential.Potential), f"Expected Object of type or inheriting libqdmmg.potential.potential.Potential, received {type(potential)}"
         self.potential = potential
+        if isinstance(self.potential, pot.mol_potential.MolecularPotential) or not adapt_strategy:
+            # TODO add molecular strategy
+            self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
+        else:
+            self.gaussian_strategy = sim.GaussianGridStrategy(self, 10.0, 750)
+            self.logger.debug2("Changed Gaussian Strategy to Gaussian Grid Strategy")
         self.logger.info("Bound potential to simulation, type: " + str(type(potential)) + ", content: " + str(potential))
-
 
     def step_forward(self, t, isInitial=False):
         if isInitial:
@@ -100,19 +106,22 @@ class Simulation:
             return r
         return numpy.random.choice(numpy.array([-1, 1]), self.dim) * r
 
-    def generate_new_gaussian(self, isInitial=False):
-        if isInitial:
+    def generate_new_gaussian(self, generation):
+        if generation == -1:
             widthsquare = 0.25 * numpy.diag(self.potential.hessian(numpy.zeros(self.dim))) * self.potential.reduced_mass
             for w in range(len(widthsquare)):
                 if widthsquare[w] < 0.01:
                     widthsquare[w] = 0.1
             width = numpy.sqrt(widthsquare)
+            self.logger.debug3(f"Width of initial Gaussian :{width}")
             return gen.Gaussian(self, centre=numpy.zeros(self.dim), width=width)
-        centre = self.random_array(0.05, 0.05, symmetric=True, normal=True) / numpy.sqrt(self.previous_wavefunction.gaussians[0].width)
-        width = numpy.sqrt(self.previous_wavefunction.gaussians[0].width) * self.random_array(0.5, 1.0)
+        
+        centre = self.gaussian_strategy.new_position(generation)
+        width = self.gaussian_strategy.new_width(generation)
         gaussian = gen.Gaussian(self, centre=centre, width=width)
-        coeff = 1.0 / (len(self.previous_wavefunction.gaussians)+1)
+        #coeff = 1.0 / (len(self.previous_wavefunction.gaussians)+1)
         #coeff = min(max(numpy.exp(-gaussian.energy_tot(0)*100), 0.01), 0.99)
+        coeff = 10**-9
         return gaussian, coeff
 
     def gen_wavefunction(self):
@@ -121,7 +130,7 @@ class Simulation:
         # Generate first gaussian
         if not isinstance(self.active_gaussian, gen.gaussian.Gaussian):
             #self.active_gaussian = gen.Gaussian(self, centre=self.random_array(-1.0, 1.0), width=self.random_array(0.1, 1.0))
-            self.active_gaussian = self.generate_new_gaussian(isInitial=True)
+            self.active_gaussian = self.generate_new_gaussian(-1)
         # Timestepping
         self.run_timesteps(isInitial=True)
         # Binding first gaussian to wavepackt
@@ -131,7 +140,7 @@ class Simulation:
         while generation < self.generations:
             # Generate next gaussian
             self.active_coeffs = numpy.zeros(self.tsteps)
-            self.active_gaussian, self.active_coeffs[0] = self.generate_new_gaussian() 
+            self.active_gaussian, self.active_coeffs[0] = self.generate_new_gaussian(generation) 
             self.d_active_coeffs = numpy.zeros(self.tsteps)
             # Timestepping
             accept_gaussian = self.run_timesteps(generation=generation+1)
@@ -141,6 +150,20 @@ class Simulation:
                 self.previous_wavefunction.bind_gaussian(self.active_gaussian.copy(), ac)
                 generation += 1
             # Check convergence
+            # quality = self.previous_wavefunction.propagation_quality()
+            # self.logger.info(f"Propagation Fitness: \n\n{-numpy.log(quality)}")
+        
+        self.redo_coefficients()
+
+    def redo_coefficients(self):
+        self.previous_wavefunction.reset_coeffs()
+        for t in range(self.tsteps-1):
+            ncoeffs = self.eom_intor.renew_coefficients(self.previous_wavefunction.gaussians, self.previous_wavefunction.get_coeffs(t), t)
+            self.previous_wavefunction.gauss_coeff[:,t+1] = ncoeffs
+            norm = abs(intor.int_request(self, 'int_ovlp_ww', self.previous_wavefunction, self.previous_wavefunction, t+1))
+            self.logger.info(f"Wavepacket Norm before Normalisation: {norm}")
+            self.previous_wavefunction.gauss_coeff[:,t+1] /= numpy.sqrt(norm)
+            self.logger.info(f"Updated Coefficients: {self.previous_wavefunction.get_coeffs(t)}")
 
     def get_wavefunction(self):
         if self.previous_wavefunction is None:

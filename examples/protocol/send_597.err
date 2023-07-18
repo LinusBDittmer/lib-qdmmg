@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/examples/12-h2of-anion.py", line 12, in <module>
+    geometry, charge, mult = pot.from_xyz('./benchmarking/H2OF-/geometry/base.xyz')
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/potential/__init__.py", line 36, in from_xyz
+    with open(path, 'r') as f:
+         ^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './benchmarking/H2OF-/geometry/base.xyz'

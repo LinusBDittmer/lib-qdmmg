@@ -16,7 +16,7 @@ U_TO_ME = 1822.888486212016
 
 class MolecularPotential(Potential):
 
-    def __init__(self, sim, eq_geometry, rounding=2, theory='rhf', xc='b3lyp', basis='sto-3g', charge=0, multiplicity=1):
+    def __init__(self, sim, eq_geometry, rounding=4, theory='rhf', xc='b3lyp', basis='sto-3g', charge=0, multiplicity=1):
         super().__init__(sim)
         self.atom_labels = tuple([eq_geometry[i] for i in range(0, len(eq_geometry), 4)])
         self.eq_geometry = tuple([g for i,g in enumerate(eq_geometry) if i % 4 > 0])
@@ -39,12 +39,16 @@ class MolecularPotential(Potential):
         # Hessian has to be normalised by division with reduced mass
         # Harmonic Frequencies can be calculated with the normalised quantities 
 
-        eq_info, self.eq_hessian = _pyscf_api.eq_info(self.build_atom_string(), self.basis, self.charge, self.multiplicity-1, theory=self.theory, xc=self.xc)
+        eq_info, self.eq_hessian, self.eq_energy, charges = _pyscf_api.eq_info(self.build_atom_string(), self.basis, self.charge, self.multiplicity-1, theory=self.theory, xc=self.xc)
         self.eq_hessian /= BOHR_TO_ANG**2
         self.norm_modes = eq_info['norm_mode']
         self.reduced_mass = eq_info['reduced_mass'] * U_TO_ME
         self.norm_modes = numpy.einsum('ijk,i->ijk', self.norm_modes, numpy.sqrt(self.reduced_mass))
+        self.reduced_charges = numpy.einsum('ijk,j->ijk', self.norm_modes, charges)
+        self.reduced_charges = numpy.einsum('ijk->i', self.reduced_charges) / 3
         self.eq_hessian = self.convert_hessian(self.eq_hessian)
+
+        assert len(self.norm_modes) == self.sim.dim, f"Incorrect number of dimensions specified in Simulation object. Should be {len(self.norm_modes)} but is {self.sim.dim}"
 
     def convert_hessian(self, hess):
         return numpy.einsum('iab,acbd,jcd->ij', self.norm_modes, hess, self.norm_modes) / self.reduced_mass
@@ -66,6 +70,10 @@ class MolecularPotential(Potential):
     def build_atom_string(self, geom=None):
         if geom is None:
             geom = self.eq_geometry
+        else:
+            displacement = numpy.reshape(numpy.einsum('ijk,i->jk', self.norm_modes, geom), len(self.eq_geometry))
+            geom = self.eq_geometry + displacement
+
         geom_str = ""
         for i in range(0, len(self.atom_labels)):
             g0 = round(geom[3*i]*BOHR_TO_ANG, self.rounding)
@@ -74,21 +82,23 @@ class MolecularPotential(Potential):
             geom_str += self.atom_labels[i] + " " + str(g0) + " " + str(g1) + " " + str(g2) + "; "
         return geom_str[:-2]
 
-    def get_eff_point(x):
+    def get_eff_point(self, x):
         return tuple(numpy.round(numpy.array(x), self.rounding))
 
-    def calc_new_point(x):
+    def calc_new_point(self, x):
         x = self.get_eff_point(x)
-        sp, g, h = _pyscf_api.joint_call(self.build_atom_str(geom=x), self.basis, self.charge, self.multiplicity-1, theory=self.theory, xc=self.xc)
+        print(f"Distance : {x}")
+        print(f"Geometry : {self.build_atom_string(geom=x)}")
+        sp, g, h = _pyscf_api.joint_call(self.build_atom_string(geom=x), self.basis, self.charge, self.multiplicity-1, theory=self.theory, xc=self.xc)
         g = self.convert_gradient(g)
         h = self.convert_hessian(h)
         self.data[x] = (sp, g, h)
 
-    def evaluate(self, x, joint_call=True):
+    def evaluate(self, x):
         x = self.get_eff_point(x)
         if not x in self.data:
             self.calc_new_point(x)
-        return self.data[x][0]
+        return self.data[x][0] - self.eq_energy
 
     def gradient(self, x):
         x = self.get_eff_point(x)

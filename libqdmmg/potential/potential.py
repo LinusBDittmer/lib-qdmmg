@@ -33,6 +33,7 @@ class Potential:
         self.sim = sim
         self.logger = sim.logger
         self.reduced_mass = numpy.ones(sim.dim)
+        self.reduced_charges = numpy.ones(sim.dim)
 
     def evaluate(self, x):
         '''
@@ -198,22 +199,36 @@ class PotentialIntegrator:
             return self._int_gVw(*args)
         else:
             raise gen.IIRSException(rq, "")
+    
+    def _clean(self, i):
+        if numpy.isnan(i):
+            return 0.0
+        if numpy.isinf(i):
+            return 0.0
+        return i
 
     def _int_wVw(self, w1, w2, t, r_taylor=None):
         int_val = 0.0
         coeffs1 = w1.get_coeffs(t)
         coeffs2 = w2.get_coeffs(t)
+        if r_taylor is None:
+            coeffs_t = numpy.concatenate((coeffs1, coeffs2))
+            centres1 = numpy.array([g.centre[t] for g in w1.gaussians])
+            centres2 = numpy.array([g.centre[t] for g in w2.gaussians])
+            centres_t = numpy.concatenate((centres1, centres2))
+            coeffs_t /= numpy.sum(coeffs_t)
+            r_taylor = numpy.einsum('ji,j->i', centres_t, coeffs_t)
         for i in range(len(coeffs1)):
             for j in range(len(coeffs2)):
-                int_val += coeffs1[i]*coeffs2[i]*self._int_gVg(w1.gaussians[i], w2.gaussians[j], t, r_taylor=r_taylor)
-        return int_val
+                int_val += coeffs1[i]*coeffs2[j]*self._int_gVg(w1.gaussians[i], w2.gaussians[j], t, r_taylor=r_taylor)
+        return self._clean(int_val)
 
     def _int_wVg(self, w1, g2, t, r_taylor=None):
         int_val = 0
         coeffs = w1.get_coeffs(t)
         for i in range(len(coeffs)):
             int_val += coeffs[i]*self._int_gVg(w1.gaussians[i], g2, t, r_taylor=r_taylor)
-        return int_val
+        return self._clean(int_val)
 
     def _int_gVw(self, g1, w2, t, r_taylor=None):
         return self._int_wVg(w2, g1, t, r_taylor=r_taylor).conj()
@@ -252,7 +267,7 @@ class PotentialIntegrator:
                 gx2g[i,j] = intor.int_request(sim, 'int_gx2g', g1, g2, t, i, j, m=gg, useM=True)
         v1 = gxg - gg * r_taylor
         v2 = gx2g - numpy.einsum('k,m->mk', r_taylor, gxg) - numpy.einsum('m,k->mk', r_taylor, gxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * gg
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
+        return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2))
 
     def _int_uVg(self, g1, g2, t, r_taylor=None):
         '''
@@ -288,7 +303,7 @@ class PotentialIntegrator:
                 ux2g[i,j] = intor.int_request(sim, 'int_ux2g', g1, g2, t, i, j, m=ug, useM=True)
         v1 = uxg - ug * r_taylor
         v2 = ux2g - numpy.einsum('k,m->mk', r_taylor, uxg) - numpy.einsum('m,k->mk', r_taylor, uxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * ug
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
+        return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2))
 
     def _int_uVxg(self, g1, g2, t, index, r_taylor=None):
         '''
@@ -344,7 +359,7 @@ class PotentialIntegrator:
         v1v = numpy.dot(grad, v1)
         v2v = numpy.einsum('ij,ji->', hess, v2)
 
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
+        return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2))
     
     def _int_vVg(self, g1, g2, t, vindex, r_taylor=None):
         '''
@@ -383,7 +398,7 @@ class PotentialIntegrator:
         v1 = vxg - vg * r_taylor
         v2 = vx2g - numpy.einsum('k,m->mk', r_taylor, vxg) - numpy.einsum('m,k->mk', r_taylor, vxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * vg
 
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2)
+        return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ij->', hess, v2))
     
     def _int_vVxg(self, g1, g2, t, vindex, index, r_taylor=None):
         '''
@@ -425,6 +440,6 @@ class PotentialIntegrator:
         v1 = vx2g - vxg * r_taylor
         v2 = vx3g - numpy.einsum('k,m->mk', r_taylor, vx2g) - numpy.einsum('m,k->mk', r_taylor, vx2g) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * vxg
 
-        return v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2)
+        return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2))
 
 

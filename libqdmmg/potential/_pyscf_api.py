@@ -44,7 +44,7 @@ def eq_info(atom, basis, charge, spin, theory='rhf', xc='', verbose=0):
     theo.kernel()
     hess = theo.Hessian().kernel()
     eq_info = thermo.harmonic_analysis(mol, hess)
-    return eq_info, hess
+    return eq_info, hess, mol.energy_tot(), mol._atm[:,0]
 
 def get_theory(theory, mol, xc=''):
     if theory == 'rhf':

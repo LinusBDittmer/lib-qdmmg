@@ -64,10 +64,13 @@ class Gaussian:
         self.sim = sim
         self.centre = numpy.zeros((tsteps, sim.dim))
         self.d_centre = numpy.zeros(self.centre.shape)
+        self.d_centre_v = numpy.zeros(self.centre.shape)
         self.momentum = numpy.zeros((tsteps, sim.dim))
         self.d_momentum = numpy.zeros(self.momentum.shape)
+        self.d_momentum_v = numpy.zeros(self.momentum.shape)
         self.phase = numpy.zeros(tsteps)
         self.d_phase = numpy.zeros(self.phase.shape)
+        self.d_phase_v = numpy.zeros(self.phase.shape)
         self.width = numpy.ones(sim.dim)
         self.phase[0] = phase
         self.logger = sim.logger
@@ -227,6 +230,35 @@ class Gaussian:
     def energy_tot(self, t):
         return self.energy_kin(t) + self.energy_pot(t)
 
+    def interpolate(self, ti, returntype='tuple'):
+        t0 = int(ti)
+        t1 = t0+1
+        t2 = t0+2
+        dt = ti - t0
+        xa, xb, xc, pa, pb, pc = [numpy.zeros(self.sim.dim)] * 6
+        ga, gb, gc = 0, 0, 0
+        if t0 > self.sim.tsteps-3:
+            xint = dt * self.centre[t0-1] + (1-dt) * self.centre[t0]
+            pint = dt * self.momentum[t0-1] + (1-dt) * self.momentum[t0]
+            gint = dt * self.phase[t0-1] + (1-dt) * self.phase[t0]
+        else:
+            # 3-Point forward interpolation
+            xc = self.centre[t0]
+            xb = -0.5 * self.centre[t2] + 2 * self.centre[t1] - 2 * self.centre[t0]
+            xa = 0.5 * self.centre[t2] + self.centre[t0] - self.centre[t1]
+            pc = self.momentum[t0]
+            pb = -0.5 * self.momentum[t2] + 2 * self.momentum[t1] - 2 * self.momentum[t0]
+            pa = 0.5 * self.momentum[t2] + self.momentum[t0] - self.momentum[t1]
+            gc = self.phase[t0]
+            gb = -0.5 * self.phase[t2] + 2 * self.phase[t1] - 2 * self.phase[t0]
+            ga = 0.5 * self.phase[t2] + self.phase[t0] - self.phase[t1]
+            xint = xa * dt*dt + xb * dt + xc
+            pint = pa * dt*dt + pb * dt + pc
+            gint = ga * dt*dt + gb * dt + gc
+        if returntype == 'tuple':
+            return tuple(xint), tuple(pint), gint
+        return xint, pint, gint
+
     def step_forward(self, t):
         '''
         Internal management of the time-integration scheme. The Gaussian time-integration employs a symmetric explicit time integration scheme of the form
@@ -239,9 +271,9 @@ class Gaussian:
 
         '''
         self.logger.debug2("Gaussian " + str(self) + " stepping forward in time.")
-        self.centre[t+1] = self.sim.eom_intor.next_centre(self.centre, self.d_centre, t)
-        self.momentum[t+1] = self.sim.eom_intor.next_momentum(self.momentum, self.d_momentum, t)
-        self.phase[t+1] = self.sim.eom_intor.next_phase(self.phase, self.d_phase, t)
+        self.centre[t+1] = self.sim.eom_intor.next_centre(self, t)
+        self.momentum[t+1] = self.sim.eom_intor.next_momentum(self, t)
+        self.phase[t+1] = self.sim.eom_intor.next_phase(self, t)
         self.phase[t+1] = (self.phase[t+1] + numpy.pi) % (2*numpy.pi) - numpy.pi
         self.logger.info("Centre:")
         for k in range(self.sim.dim):

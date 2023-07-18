@@ -7,7 +7,7 @@ import libqdmmg.potential as pot
 import libqdmmg.export as exp
 import libqdmmg.plotting as plot
 
-s = sim.Simulation(500, 1.0, dim=1, verbose=6, generations=3)
+s = sim.Simulation(5000, 1.0, dim=1, verbose=6, generations=3)
 molpot = pot.MolecularPotential(s, ("H", 0.0, 0.0, 0.0, "H", 2.0, 0.0, 0.0))
 s.bind_potential(molpot.to_harmonic_oscillator())
 s.gen_wavefunction()

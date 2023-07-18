@@ -16,8 +16,8 @@ import libqdmmg.potential.mol_potential as molpot
 def HarmonicOscillator(sim, forces):
     return ho.HarmonicOscillator(sim, forces)
 
-def DoubleQuadraticWell(sim, quartic=None, cubic=None, quadratic=None, linear=None, constant=None):
-    return dqw.DoubleQuadraticWell(sim, quartic, cubic, quadratic, linear, constant)
+def DoubleQuadraticWell(sim, quartic=1.0, quadratic=0.0, shift=None, coupling=0.0):
+    return dqw.DoubleQuadraticWell(sim, quartic, quadratic, shift, coupling)
 
 def TrialPotential(sim, grad, forces):
     return tp.TrialPotential(sim, grad, forces)
@@ -28,5 +28,28 @@ def HenonHeiles(sim, omega, l):
 def CoupledHarmonicOscillator(sim, forces, coupling):
     return cho.CoupledHarmonicOscillator(sim, forces, coupling)
 
-def MolecularPotential(sim, eq_geometry, rounding=2, theory='rhf', xc='b3lyp', basis='sto-3g', charge=0, multiplicity=1):
+def MolecularPotential(sim, eq_geometry, rounding=4, theory='rhf', xc='b3lyp', basis='sto-3g', charge=0, multiplicity=1):
     return molpot.MolecularPotential(sim, eq_geometry, rounding, theory, xc, basis, charge, multiplicity)
+
+def from_xyz(path):
+    content = None
+    with open(path, 'r') as f:
+        content = f.readlines()
+    read_multcharge = False
+    geometry = []
+    mult = 1
+    charge = 0
+    for line in content:
+        if len(line.strip()) == 0:
+            continue
+        if not read_multcharge:
+            charge = int(line.strip().split()[0])
+            mult = int(line.strip().split()[1])
+            read_multcharge = True
+            continue
+        atom = line.strip().split()
+        geometry.append(atom[0])
+        geometry.append(float(atom[1]))
+        geometry.append(float(atom[2]))
+        geometry.append(float(atom[3]))
+    return tuple(geometry), charge, mult

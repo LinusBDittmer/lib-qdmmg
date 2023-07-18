@@ -1,0 +1,50 @@
+------------------------------------------------------
+Job is running on nodes
+    Knecht29
+------------------------------------------------------
+qsys: job was submitted from ccserv1
+qsys: originating queue is
+qsys: executing queue is
+qsys: original working directory is /export/home/ccprak16/Documents/Linus/MMG/workspace/examples/benchmarking/H3F3/geometry
+qsys: job identifier is 502
+qsys: job name is base
+qsys: current home directory is
+qsys: PATH =
+------------------------------------------------------
+
+Calculation working directory: /scratch/ccprak16/base_502
+            scratch directory: /lscratch/ccprak16/base_502
+
+------------------------------------------------------
+
+	Running on host without AVX support -> using generic version.
+
+	Your environment variables are now setup for use of Q-Chem.
+	You do not need to source qchem.setup.sh or qchem.setup.csh!
+
+	Do not forget to set variable QCSCRATCH to your 
+	preferred scratch directory!
+setting QC=/opt/software/Q-Chem/intel/mkl/6.0.2/generic
+setting QCAUX=/opt/software/Q-Chem/qcaux_qchem_6.0.2
+This is a multi-thread run using 4 threads
+/opt/software/Q-Chem/intel/mkl/6.0.2/generic/exe/qcprog.exe .base.in.12788.qcin.1 /lscratch/ccprak16/base_502/qchem12788/
+
+------------------------------------------------------
+
+Final files in /export/home/ccprak16/Documents/Linus/MMG/workspace/examples/benchmarking/H3F3/geometry:
+    insgesamt 268
+    -rw-r--r-- 1 ccprak16 CompChem    369  4. Jul 2023  base.in
+    -rw-r--r-- 1 ccprak16 CompChem   1389  4. Jul 2023  base.o502
+    -rw-r--r-- 1 ccprak16 CompChem 254746  4. Jul 2023  base.out
+    -rw-r--r-- 1 ccprak16 CompChem   7521  4. Jul 2023  base.sh
+
+More files can be found in /scratch/ccprak16/base_502 and /lscratch/ccprak16/base_502 on
+    Knecht29
+
+Sizes of these files:
+    4,0K	base.in
+    252K	base.out
+    256K	insgesamt
+
+If you want to delete these, run:
+    ssh Knecht29 rm -r "/scratch/ccprak16/base_502" "/lscratch/ccprak16/base_502"

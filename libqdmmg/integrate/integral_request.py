@@ -132,7 +132,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
     rq = request_string.strip().lower()
     argnum = len(args)
     assert argnum >= 3, f"All composite integrals require at least three arguments. Received {argnum}"
-    assert isinstance(args[2], int), f"Timestep index must be given as integer in third argument slot. Received {type(args[2])}"
+    assert isinstance(args[2], int) or isinstance(args[2], float), f"Timestep index must be given as integer in third argument slot. Received {type(args[2])}"
     t = args[2]
 
     if '_gg' in rq or '_gw' in rq:
@@ -143,6 +143,25 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         assert isinstance(args[0], gen.wavepacket.Wavepacket), f"For integrals of type -wg or -ww, the first argument must be a Wavepacket. Received {type(args[0])}"
     if '_gw' in rq or '_ww' in rq:
         assert isinstance(args[1], gen.wavepacket.Wavepacket), f"For integrals of type -gw or -ww, the second argument must be a Wavepacket. Received {type(args[1])}"
+
+    g1centre, g1momentum, g1phase, g2centre, g2momentum, g2phase = None, None, 0, None, None, 0
+    if abs(t - int(t)) < 10**-5:
+        if '_gg' in rq or '_gw' in rq:
+            g1 = args[0]
+            g1centre = g1.centre[t]
+            g1momentum = g1.momentum[t]
+            g1phase = g1.phase[t]
+        if '_wg' in rq or '_gg' in rq:
+            g2 = args[1]
+            g2centre = g2.centre[t]
+            g2momentum = g2.momentum[t]
+            g2phase = g2.phase[t]
+    else:
+        if '_gg' in rq or '_gw' in rq:
+            g1centre, g1momentum, g1phase = args[0].interpolate(t, returntype='ndarray')
+        if '_wg' in rq or '_gg' in rq:
+            g2centre, g2momentum, g2phase = args[1].interpolate(t, returntype='ndarray')
+
 
     if rq == 'int_ovlp_gg':
         return int_atom_request('int_gg', *args, **kwargs)
@@ -173,10 +192,10 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         gxg = numpy.zeros(sim.dim, dtype=numpy.complex128)
         for i in range(sim.dim):
             gxg[i] = int_atom_request('int_gxg', g1, g2, t, i)
-        dovlp_vec1 = gxg - g2.centre[t] * gg
-        dovlp1 = 2 * numpy.dot(g2.width*g2.d_centre[t], dovlp_vec1)
-        dovlp2 = numpy.dot(g2.d_momentum[t], gxg)
-        return dovlp1 + 1j*(dovlp2 + g2.d_phase[t]*gg)
+        dovlp_vec1 = gxg - g2centre * gg
+        dovlp1 = 2 * numpy.dot(g2.width*g2.d_centre[int(t)], dovlp_vec1)
+        dovlp2 = numpy.dot(g2.d_momentum[int(t)], gxg)
+        return dovlp1 + 1j*(dovlp2 + g2.d_phase[int(t)]*gg)
     elif rq == 'int_dovlp_wg':
         wp = args[0]
         g1 = args[1]
@@ -211,9 +230,10 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         for i in range(sim.dim):
             int_gxg[i] = int_atom_request('int_gxg', g1, g2, t, i, m=int_gg, useM=True)
             int_gx2g[i] = int_atom_request('int_gx2g_d', g1, g2, t, i, m=int_gg, useM=True)
-        kin_vec = 4 * g2.width * g2.width * (int_gx2g - 2 * g2.centre[t] * int_gxg + g2.centre[t] * g2.centre[t] * int_gg)
-        kin_vec -= 4j * g2.width * g2.momentum[t] * (int_gxg - g2.centre[t] * int_gg)
-        kin_vec -= (2 * g2.width + g2.momentum[t] * g2.momentum[t]) * int_gg
+        kin_vec = numpy.zeros(sim.dim, dtype=numpy.complex128)
+        kin_vec += 4 * g2.width * g2.width * (int_gx2g - 2 * g2centre * int_gxg + g2centre * g2centre * int_gg)
+        kin_vec -= 4j * g2.width * g2momentum * (int_gxg - g2centre * int_gg)
+        kin_vec -= (2 * g2.width + g2momentum * g2momentum) * int_gg
         kin = numpy.dot(kin_vec, 1.0 / sim.potential.reduced_mass)
         return -0.5 * kin
     elif rq == 'int_kinetic_wg':
@@ -310,7 +330,7 @@ def int_atom_request(request_string, *args, **kwargs):
     # All Elementary integrals have g1, g2, t
     assert argnum >= 3, f"All integrals require at least three arguments (g1, g2, t). Received {len(args)}"
     assert isinstance(args[0], gen.gaussian.Gaussian) and isinstance(args[1], gen.gaussian.Gaussian), f"Two Gaussians must be given as the first two arguments"
-    assert isinstance(args[2], int), f"Timestep must be given as index in the third argument"
+    assert isinstance(args[2], int) or isinstance(args[2], float), f"Timestep must be given as index in the third argument"
 
     g1 = args[0]
     g2 = args[1]

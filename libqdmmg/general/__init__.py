@@ -33,3 +33,4 @@ def IIRSException(rq, int_class, *args):
 
 def InvalidJSONFlagException(path, *args):
     return exceptions.InvalidJSONFlagException(path, *args)
+

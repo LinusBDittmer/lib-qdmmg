@@ -21,6 +21,8 @@ def linear_plots(*prop, **kwargs):
 
     fig, axs = plt.subplots(get_plot_num(*prop), 1, sharex=sharex, figsize=figsize)
     plt.suptitle(title)
+    if get_plot_num(*prop) == 1:
+        axs = [axs]
     for ax in axs:
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -31,7 +33,7 @@ def linear_plots(*prop, **kwargs):
 
     offset=0
     for index in range(len(prop)):
-        linear_plot(axs, prop[index], index+offset, **kwargs)
+        linear_plot(axs, prop[index], index, **kwargs)
         if prop[index] != 0:
             offset += numpy.prod(numpy.array(prop[index].shape))
 
@@ -44,9 +46,23 @@ def linear_plot(axs, prop, index, **kwargs):
     
     yvals = prop.get()
     num_plots = 1 if prop.shape == 0 else numpy.prod(numpy.array(prop.shape))
+    num_plots = 1
     axs[index].set_title(prop.descriptor)
-    for i in range(num_plots):
-        axs[index+i].plot(numpy.arange(prop.sim.tsteps), yvals)
+    if prop.islog:
+        axs[index].semilogy()
+    l = 1
+    if len(yvals.shape) > 1:
+        l = yvals.shape[1]
+    for i in range(l):
+        if l == 1:
+            axs[index].plot(numpy.arange(prop.sim.tsteps), yvals)
+        else:
+            axs[index].plot(numpy.arange(prop.sim.tsteps), yvals[:,i], label=str(i))
+    #if prop.islog:
+    #    axs[index].set_ylim(top=1.0)
+    #if l > 1:
+        #axs[index].legend(loc=1, bbox_to_anchor=(0.5, -0.1), borderaxespad=0., ncol=10)
+    
 
 def get_plot_num(*prop):
     prop_num = 0
@@ -54,6 +70,7 @@ def get_plot_num(*prop):
         if p.shape == 0:
             prop_num += 1
         else:
-            prop_num += numpy.prod(numpy.array(p.shape))
+            #prop_num += numpy.prod(numpy.array(p.shape))
+            prop_num += 1
     return prop_num
 

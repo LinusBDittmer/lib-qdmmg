@@ -1,0 +1,22 @@
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/simulation.py:63: ComplexWarning: Casting complex values to real discards the imaginary part
+  self.active_coeffs[t+1] = cnew
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/general/wavepacket.py:182: ComplexWarning: Casting complex values to real discards the imaginary part
+  self.gauss_coeff[0,0] = 1 / numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_gg', self.gaussians[0], self.gaussians[0], 0))
+Traceback (most recent call last):
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/examples/11-hof-molecule.py", line 15, in <module>
+    s.gen_wavefunction()
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/simulation.py", line 156, in gen_wavefunction
+    self.redo_coefficients()
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/simulation.py", line 161, in redo_coefficients
+    ncoeffs = self.eom_intor.renew_coefficients(self.previous_wavefunction.gaussians, self.previous_wavefunction.get_coeffs(t), t)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py", line 60, in renew_coefficients
+    dovlp = lambda x: x*dovlp0 + (1-x)*dovlp0
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/interpolate/_interpolate.py", line 491, in __init__
+    _Interpolator1D.__init__(self, x, y, axis=axis)
+  File "/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/interpolate/_polyint.py", line 56, in __init__
+    self._set_yi(yi, xi=xi, axis=axis)
+  File "/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/interpolate/_polyint.py", line 126, in _set_yi
+    raise ValueError("x and y arrays must be equal in length along "
+ValueError: x and y arrays must be equal in length along interpolation axis.

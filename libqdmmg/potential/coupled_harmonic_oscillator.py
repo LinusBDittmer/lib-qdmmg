@@ -28,7 +28,7 @@ class CoupledHarmonicOscillatorIntegrator(PotentialIntegrator):
     
     def __init__(self, cho):
         super().__init__(cho)
-        assert isinstance(cho, CoupledHarmonicOscillator), f"Only Coupled Harmonic Oscillator potential permitted, received {type(ho)}"
+        assert isinstance(cho, CoupledHarmonicOscillator), f"Only Coupled Harmonic Oscillator potential permitted, received {type(cho)}"
 
 
         

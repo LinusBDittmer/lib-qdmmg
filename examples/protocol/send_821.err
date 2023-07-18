@@ -1,0 +1,53 @@
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/simulation.py:63: ComplexWarning: Casting complex values to real discards the imaginary part
+  self.active_coeffs[t+1] = cnew
+/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/integrate/_ode.py:1011: UserWarning: vode: Excess work done on this call. (Perhaps wrong MF.)
+  warnings.warn('{:s}: {:s}'.format(self.__class__.__name__,
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/integrate/atom_integrator.py:748: RuntimeWarning: overflow encountered in exp
+  return 2**(len(g1width)*0.5+1) * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/integrate/atom_integrator.py:748: RuntimeWarning: invalid value encountered in scalar multiply
+  return 2**(len(g1width)*0.5+1) * g1width[vindex] * prefactor1 * numpy.exp(ep1 + 0.25 * ep2 + 1j*g2phase)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:44: RuntimeWarning: divide by zero encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:44: RuntimeWarning: invalid value encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:184: RuntimeWarning: invalid value encountered in scalar multiply
+  correction3 = 0.25 * d_a_coeff * b_breve / a_coeff * (ext_cont3 + ext_cont3.conj())
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:214: RuntimeWarning: divide by zero encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:214: RuntimeWarning: invalid value encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:305: RuntimeWarning: invalid value encountered in scalar multiply
+  correction3 = -0.5j * d_a_coeff * b_breve / a_coeff * (ext_cont3 - ext_cont3.conj())
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:344: RuntimeWarning: divide by zero encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:344: RuntimeWarning: invalid value encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:434: RuntimeWarning: invalid value encountered in scalar multiply
+  correction3 = -0.25j * d_a_coeff * b_breve / (a_coeff * g1.width[0]) * (ext_cont3 - numpy.conj(ext_cont3))
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:469: RuntimeWarning: divide by zero encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:469: RuntimeWarning: invalid value encountered in scalar divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:472: RuntimeWarning: invalid value encountered in scalar multiply
+  b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - b_breve * e_wp)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:473: RuntimeWarning: invalid value encountered in scalar multiply
+  inv_term = 2 * b_breve * ovlp_gw.real - ovlp_gg - b_breve * b_breve
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:490: RuntimeWarning: invalid value encountered in scalar divide
+  d_coeff = ((a_coeff * a_term + b_coeff * b_term) / inv_term)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom.py:471: RuntimeWarning: invalid value encountered in scalar multiply
+  a_term = dovlp_gg + dovlp_wg + 1j*(e_g - b_breve * e_coupling.conj())
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:258: RuntimeWarning: divide by zero encountered in divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:258: RuntimeWarning: invalid value encountered in divide
+  b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:260: RuntimeWarning: invalid value encountered in multiply
+  a_term = dovlp_gg + dovlp_wg + 1j*(e_g - b_breve * e_coupling.conj())
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:261: RuntimeWarning: invalid value encountered in multiply
+  b_term = dovlp_gw + dovlp_ww + 1j*(e_coupling - b_breve * e_wp)
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:262: RuntimeWarning: invalid value encountered in multiply
+  inv_term = 2 * b_breve * ovlp_gw.real - ovlp_gg - b_breve * b_breve
+/export/home/ccprak16/Documents/Linus/MMG/workspace/libqdmmg/simulate/eom_integrator.py:263: RuntimeWarning: invalid value encountered in divide
+  d_coeff = (a_coeff * a_term + b_coeff * b_term) / inv_term
+/export/home/ccprak16/anaconda3/envs/lib-qdmmg/lib/python3.11/site-packages/scipy/integrate/_ode.py:1011: UserWarning: vode: Repeated convergence failures. (Perhaps bad Jacobian supplied or wrong choice of MF or tolerances.)
+  warnings.warn('{:s}: {:s}'.format(self.__class__.__name__,
+slurmstepd-Knecht10: error: *** JOB 821 ON Knecht10 CANCELLED AT 2023-07-07T11:30:33 ***

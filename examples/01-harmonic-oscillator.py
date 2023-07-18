@@ -7,9 +7,10 @@ import libqdmmg.potential as pot
 import libqdmmg.export as exp
 import libqdmmg.plotting as plot
 
-s = sim.Simulation(500, 1.0, dim=1, verbose=6, generations=3)
-p = pot.HarmonicOscillator(s, 38.85*numpy.ones(1))
-p.reduced_mass = 1850 * numpy.ones(1)
+dim = 2
+s = sim.Simulation(100, 1.0, dim=dim, verbose=6, generations=1)
+p = pot.HarmonicOscillator(s, 38.85*numpy.ones(dim))
+p.reduced_mass = 1850 * numpy.ones(dim)
 s.bind_potential(p)
 s.gen_wavefunction()
 exp.export_to_json(s.get_wavefunction(), 'trial.json')

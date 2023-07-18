@@ -6,6 +6,7 @@ author: Linus Bjarne Dittmer
 
 '''
 import numpy
+import scipy
 import libqdmmg.integrate as intor
 
 def eom_init_centre(sim, pot, g, t):
@@ -13,7 +14,7 @@ def eom_init_centre(sim, pot, g, t):
     return dx_bar
 
 def eom_init_momentum(sim, pot, g, t):
-    dp = numpy.diag(pot.hessian(g.centre[t])) * g.centre[t] - pot.gradient(g.centre[t]) - 4 * g.width * g.width * g.centre[t] / pot.reduced_mass
+    dp = - pot.gradient(g.centre[t]) #+ numpy.diag(pot(hessian(g.centre[t]))) * g_centre[t] - 4 * g.width * g.width * g.centre[t] / pot.reduced_mass
     return dp
 
 def eom_init_phase(sim, pot, g, t):
@@ -192,7 +193,6 @@ def eom_centre(sim, pot, g1, t):
     logger.debug3(f"Correction 2 : {correction2}")
     logger.debug3(f"Correction 3 : {correction3}")
     logger.debug3(f"Corrective sum : {correction1+correction2+correction3}")
-    logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
 
     #return eom_init_centre(sim, pot, g1, t)
     return self_cont.real, total_correction.real
@@ -261,7 +261,7 @@ def eom_momentum(sim, pot, g1, t):
                 int_vx3g_tensor[g,i,j] = intor.int_request(sim, 'int_vx3g', g1, g2, t, 0, i, j, j, m=int_vg_tensor[g], useM=True)
 
     # Self contribution
-    self_cont = (-4 * g1.width*g1.width * g1.centre[t] / pot.reduced_mass - pot.gradient(g1.centre[t]) + numpy.einsum('ll,l->l', pot.hessian(g1.centre[t]), g1.centre[t]))
+    self_cont = -pot.gradient(g1.centre[t]) #+ (-4 * g1.width*g1.width * g1.centre[t] / pot.reduced_mass + numpy.einsum('ll,l->l', pot.hessian(g1.centre[t]), g1.centre[t]))
 
     # Contribution by crossover with previous time derivative
     ext_cont1 = numpy.zeros(sim.dim, dtype=numpy.complex128)
@@ -323,7 +323,7 @@ def eom_momentum(sim, pot, g1, t):
     logger.debug3(f"Correction 2 : {correction2}")
     logger.debug3(f"Correction 3 : {correction3}")
     logger.debug3(f"Corrective sum : {correction1+correction2+correction3}")
-    logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
+    #logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
 
 
     return self_cont.real, total_correction.real
@@ -443,7 +443,7 @@ def eom_phase(sim, pot, g1, t):
     logger.debug3(f"Correction 2 : {correction2}")
     logger.debug3(f"Correction 3 : {correction3}")
     logger.debug3(f"Corrective sum : {correction1+correction2+correction3}")
-    logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
+    #logger.debug3(f"Relative contribution : {abs((correction1+correction2+correction3)/(correction1+correction2+correction3+self_cont))}")
 
     #return eom_init_phase(sim, pot, g1, t)
     return self_cont.real, total_correction.real
@@ -463,7 +463,7 @@ def eom_coefficient(sim, pot, g, t):
     e_wp = wp.energy_tot(t)
     e_coupling = intor.int_request(sim, 'int_kinetic_gw', g, wp, t)
     e_coupling += pot_intor.int_request('int_gVw', g, wp, t)
-
+    
     a_coeff = sim.active_coeffs[t]
     b_coeff = -a_coeff * ovlp_gw.real + numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
     b_breve = -ovlp_gw.real + a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) / numpy.sqrt(a_coeff*a_coeff*(ovlp_gw.real*ovlp_gw.real - ovlp_gg) + 1)
@@ -487,6 +487,10 @@ def eom_coefficient(sim, pot, g, t):
     norm = a_coeff*a_coeff*ovlp_gg + 2*a_coeff*b_coeff*ovlp_gw.real + b_coeff*b_coeff
     logger.debug3(f"Norm        : {norm}")
 
-    d_coeff = ((a_coeff * a_term + b_coeff * b_term) / inv_term).real
+    d_coeff = ((a_coeff * a_term + b_coeff * b_term) / inv_term)
     logger.debug3(f"Coefficient differential : {d_coeff}")
-    return d_coeff
+    #if t % 50 == 0 and t > 0:
+    #    eom_coeff_test(sim, pot, g, t, d_coeff)
+    return d_coeff.real
+
+
