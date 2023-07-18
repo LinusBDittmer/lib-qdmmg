@@ -132,3 +132,5 @@ dmypy.json
 examples/*.png
 examples/*/
 examples/*.json
+examples/*.sh
+examples/*.txt
