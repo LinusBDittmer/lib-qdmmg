@@ -138,16 +138,63 @@ class Wavepacket:
         return val
 
     def energy_kin(self, t):
+        '''
+        This function returns the kinetic energy of the wavepacket at timestep t.
+
+        Parameters
+        ----------
+        t : int
+            The timestep.
+
+        Returns
+        -------
+        ke : float
+            The kinetic energy.
+        '''
         return intor.int_request(self.sim, 'int_kinetic_ww', self, self, t).real        
 
     def energy_pot(self, t):
+        '''
+        This function returns the potential energy of the wavepacket within a local harmonic approximation at timestep t.
+
+        Parameters
+        ----------
+        t : int
+            The timestep.
+
+        Returns
+        -------
+        pe : float
+            The potential energy.
+        '''
         pot_intor = self.sim.potential.gen_potential_integrator()
         return pot_intor.int_request('int_wVw', self, self, t).real
 
     def energy_tot(self, t):
+        '''
+        This function returns the total energy of the wavepacket within a local harmonic approximation at timestep t.
+
+        Parameters
+        ----------
+        t : int
+            The timestep.
+
+        Returns
+        -------
+        te : float
+            The total energy.
+        '''
         return self.energy_kin(t) + self.energy_pot(t)
 
     def copy(self):
+        '''
+        This function returns a copy of the wavepacket with pass by value.
+
+        Returns
+        -------
+        cwp : libqdmmg.general.wavepacket.Wavepacket
+            The copied wavepacket.
+        '''
         c = Wavepacket(self.sim)
         c.gaussians = [None] * len(self.gaussians)
         c.gauss_coeff = numpy.copy(self.gauss_coeff)
@@ -156,6 +203,14 @@ class Wavepacket:
         return c
 
     def zerotime_wp(self):
+        '''
+        This function generates a "time-frozen" equivalent of the wavepacket. This Zerotime Wavepacket contains the structure of the wavepacket at timestep 0 at every timestep. The overlap of the Wavepacket with its Zerotime Wavepacket gives the autocorrelation function.
+
+        Returns
+        -------
+        zwp: libqdmmg.general.wavepacket.Wavepacket
+            The zerotime wavepacket
+        '''
         c = Wavepacket(self.sim)
         c.gaussians = [None] * len(self.gaussians)
         c.gauss_coeff = numpy.copy(self.gauss_coeff)
@@ -168,6 +223,19 @@ class Wavepacket:
         return c
 
     def propagation_quality(self):
+        '''
+        This function generates the exactness of the solved Schrödinger equation as a measure of propagation quality. Specifically, it calculates the Quality Q as:
+
+        Q = i < Psi | d/dt | Psi > - < Psi | H | Psi>
+
+        If Q is zero everywhere, the propagation is perfect.
+
+        Returns
+        -------
+        q : ndarray
+            The quality of propagation. 
+
+        '''
         quality = numpy.zeros(self.sim.tsteps)
         pot_intor = self.sim.potential.gen_potential_integrator()
         for t in range(self.sim.tsteps):
@@ -178,6 +246,9 @@ class Wavepacket:
         return quality
 
     def reset_coeffs(self):
+        '''
+        This function resets the coefficients and reinitialises the first timestep to be solely the starting Gaussian.
+        '''
         self.gauss_coeff = numpy.zeros(self.gauss_coeff.shape, dtype=float)
         self.gauss_coeff[0,0] = 1 / numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_gg', self.gaussians[0], self.gaussians[0], 0))
 

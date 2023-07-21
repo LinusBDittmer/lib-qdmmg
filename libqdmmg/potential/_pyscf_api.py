@@ -33,6 +33,7 @@ def joint_call(atom, basis, charge, spin, theory='rhf', xc='', verbose=0):
     mol = gto.M(atom=atom, charge=charge, spin=spin, verbose=verbose, basis=basis)
     theo = get_theory(theory, mol, xc=xc)
     theo.kernel()
+    print(f"Converged? : {theo.converged}")
     sp_energy = theo.energy_tot()
     grad = theo.Gradients().kernel()
     hess = theo.Hessian().kernel()

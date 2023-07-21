@@ -26,14 +26,20 @@ class Gaussian:
         Array with shape (timesteps, dimensions). This contains the centrepoints at each timestep.
     d_centre : 2D ndarray
         Array with shape (timesteps, dimensions). This array is populated by the EOM generator and is extracted by the time-integration scheme to generate the next value in centre
+    d_centre_v : 2D ndarray
+        Array with shape (timesteps, dimensions). This array describes the quantum (variational) correction to the centre step.
     momentum : 2D ndarray
         Array with shape (timesteps, dimensions). This array contains the equivalent momenta at each timestep. Note that the actual momentum is given by 1j*momentum
     d_momentum : 2D ndarray
         Array with shape (timesteps, dimensions). This array is populated by the EOM generator and is extracted by the time-integration scheme to generate the next value in momentum.
+    d_momentum_v : 2D ndarray
+        Array with shape (timesteps, dimensions). This array describes the quantum (variational) correction to the momentum step.
     phase : 1D ndarray
         Array with shape (dimensions,). This array contains the equivalent phase at each timestep. Note that the actual phase is given by 1j*phase.
     d_phase : 1D ndarray
         Array with shape (dimensions,). This array is populated by the EOM generator and is extracted by the time-integration scheme to generate the next value in phase.
+    d_phase_v : 1D ndarray
+        Array with shape (dimensions,). This array describes the quantum (variational) correction to the momentum step.
     logger : libqdmmg.general.logger.Logger
         Logger object for output.
     v_amp : 1D ndarray
@@ -83,8 +89,24 @@ class Gaussian:
         if type(momentum) is numpy.ndarray:
             self.momentum[0] = momentum
 
-    def equals(self, other, t):
-        tol = 10**-2
+    def equals(self, other, t, tol=10**-2):
+        '''
+        This method calculates whether two Gaussians can be considered equal at some timestep t with given tolerance tol.
+
+        Parameters
+        ----------
+        other : libqdmmg.general.gaussian.Gaussian
+            The Gaussian to which this instance is to be compared.
+        t : int
+            The timestep
+        tol : float, optional
+            Absolute tolerance of comparison. Default 0.01
+        
+        Returns
+        -------
+        eq : bool
+            Whether the Gaussians are considered equal within given tolerance.
+        '''
         if numpy.linalg.norm(self.centre[t] - other.centre[t]) > tol:
             return False
         if numpy.linalg.norm(self.momentum[t] - other.momentum[t]) > tol:
@@ -221,16 +243,65 @@ class Gaussian:
         return self.width[index] / self.width[0] * self.v_amp[t]
 
     def energy_kin(self, t):
+        '''
+        This method calculates the kinetic energy of the Gaussian at timestep t
+
+        Parameters
+        ----------
+        t : int
+            The timestep.
+
+        Returns
+        -------
+        ke : float
+            The kinetic energy at timestep t.
+        '''
         return intor.int_request(self.sim, 'int_kinetic_gg', self, self, t).real
 
     def energy_pot(self, t):
+        '''
+        This method calculates the potential energy within locally harmonic approximation of the Gaussian at timestep t.
+
+        Parameters
+        ----------
+        t : int
+            The timestep.
+
+        Returns
+        -------
+        pe : float
+            The potential energy at timestep t.
+        '''
         pot_intor = self.sim.potential.gen_potential_integrator()
         return pot_intor.int_request('int_gVg', self, self, t).real
 
     def energy_tot(self, t):
+        '''
+        This method calculates the total energy within locally harmonic approximation of the Gaussian at timestep t.
+
+        Parameters
+        ----------
+        t : int
+            timestep
+
+        Returns
+        -------
+        te : float
+            The total energy at timestep t.
+        '''
         return self.energy_kin(t) + self.energy_pot(t)
 
     def interpolate(self, ti, returntype='tuple'):
+        '''
+        This method interpolates the centre, momentum and phase at a non-integer time"step". This is performed by either three-point or two-point interpolation. If the given time lays between integer timesteps t0 and t1 and t2 is a sensible timestep (i. e. t0 is smaller than the total number of timesteps minus two) then quadratic interpolation between t0, t1 and t2 is used. Otherwise, the method defaults to linear interpolation between t0 and t1. Note that the data for timesteps t0, t1 and t2 (if relevant) already needs to have been generated, otherwise nonsensical results are generated without warning. The returntype argument then dictates the type which should be returned. Specifically, the method differentiates between returning the interpolated centre and momentum as a tuple or as an ndarray. The phase is always returned as a float.
+
+        Parameters
+        ----------
+        ti : float
+            The time at which the values should be interpolated
+        returntype : str, optional
+            The type of returned object. If "tuple" is given, centre and momentum are returned as tuple, otherwise as ndarray. Default "tuple"
+        '''
         t0 = int(ti)
         t1 = t0+1
         t2 = t0+2
@@ -261,14 +332,12 @@ class Gaussian:
 
     def step_forward(self, t):
         '''
-        Internal management of the time-integration scheme. The Gaussian time-integration employs a symmetric explicit time integration scheme of the form
+        This method updates the centre points, momenta and phases with data given from the Time Integrator.
 
-        .. math ::
-            
-            \frac{f(x_0+h) + f(x_0-h)}{2h} \approx \left.\frac{df}{dx}\right\vert_{x=x_0}
-
-        Except for the first timestep, in which the usual explicit time-integration scheme is used.
-
+        Parameters
+        ----------
+        t : int
+            The timestep.
         '''
         self.logger.debug2("Gaussian " + str(self) + " stepping forward in time.")
         self.centre[t+1] = self.sim.eom_intor.next_centre(self, t)
@@ -285,42 +354,6 @@ class Gaussian:
         self.logger.info("")
         self.logger.info("Phase:")
         self.logger.info(" " * 10 + str(round(self.phase[t], 12)) + "  -->  " + str(round(self.phase[t+1], 12)))
-        '''
-        if t == 0 or True:
-            self.logger.debug1("Asymmetric Integration scheme on first time step.")
-            self.centre[t+1] = self.centre[t] + self.sim.tstep_val * self.d_centre[t]
-            self.momentum[t+1] = self.momentum[t] + self.sim.tstep_val * self.d_momentum[t]
-            self.phase[t+1] = self.phase[t] + self.sim.tstep_val * self.d_phase[t]
-            self.phase[t+1] = self.phase[t+1] % 6.28318530718
-
-            self.logger.info("Centre:")
-            for k in range(self.sim.dim):
-                self.logger.info(" " * 10 + str(round(self.centre[t,k], 12)) + "  -->  " + str(round(self.centre[t+1,k], 12)))
-            self.logger.info("")
-            self.logger.info("Momentum:")
-            for k in range(self.sim.dim):
-                self.logger.info(" " * 10 + str(round(self.momentum[t,k], 12)) + "  -->  " + str(round(self.momentum[t+1,k], 12)))
-            self.logger.info("")
-            self.logger.info("Phase:")
-            self.logger.info(" " * 10 + str(round(self.phase[t], 12)) + "  -->  " + str(round(self.phase[t+1], 12)))
-        else:
-            self.logger.debug1("Symmetric Integration scheme employed.")
-            self.centre[t+1] = self.centre[t-1] + 2 * self.sim.tstep_val * self.d_centre[t]
-            self.momentum[t+1] = self.momentum[t-1] + 2 * self.sim.tstep_val * self.d_momentum[t]
-            self.phase[t+1] = self.phase[t-1] + 2 * self.sim.tstep_val * self.d_phase[t]
-
-            self.logger.info("Centre:")
-            for k in range(self.sim.dim):
-                self.logger.info(" " * 10 + str(round(self.centre[t,k], 12)) + "  -->  " + str(round(self.centre[t+1,k], 12)))
-            self.logger.info("")
-            self.logger.info("Momentum:")
-            for k in range(self.sim.dim):
-                self.logger.info(" " * 10 + str(round(self.momentum[t,k], 12)) + "  -->  " + str(round(self.momentum[t+1,k], 12)))
-            self.logger.info("")
-            self.logger.info("Phase:")
-            self.logger.info(" " * 10 + str(round(self.phase[t], 12)) + "  -->  " + str(round(self.phase[t+1], 12)))
-        '''
-
 
 
     def copy(self, dephase=False):

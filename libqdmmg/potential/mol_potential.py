@@ -51,10 +51,10 @@ class MolecularPotential(Potential):
         assert len(self.norm_modes) == self.sim.dim, f"Incorrect number of dimensions specified in Simulation object. Should be {len(self.norm_modes)} but is {self.sim.dim}"
 
     def convert_hessian(self, hess):
-        return numpy.einsum('iab,acbd,jcd->ij', self.norm_modes, hess, self.norm_modes) / self.reduced_mass
+        return numpy.einsum('iab,acbd,jcd->ij', self.norm_modes, hess, self.norm_modes) #/ self.reduced_mass
 
     def convert_gradient(self, grad):
-        return numpy.einsum('iab,ab->i', self.norm_modes, grad) / self.reduced_mass
+        return numpy.einsum('iab,ab->i', self.norm_modes, grad) #/ self.reduced_mass
 
     def harmonic_frequencies(self, hess, unit='cm-1'):
         ks = numpy.diag(self.eq_hessian) / self.reduced_mass

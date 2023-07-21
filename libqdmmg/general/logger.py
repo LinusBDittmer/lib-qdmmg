@@ -46,6 +46,9 @@ class Logger:
             atexit.register(self.print_coda)
 
     def print_header(self):
+        '''
+        This method prints the header of each Log file.
+        '''
         if self._header or not libqdmmg.is_logger_cardinal(self): return
         version = libqdmmg.__version__
         dirname = __file__[:__file__.rfind('/')]
@@ -59,6 +62,9 @@ class Logger:
         self._header = True
 
     def print_coda(self):
+        '''
+        This method prints the coda of each Log file.
+        '''
         if self._verbose == 0 or self._coda or not libqdmmg.is_logger_cardinal(self): 
             return
         exec_details = ""
