@@ -11,8 +11,29 @@ import numpy
 import libqdmmg.integrate.atom_integrator as atom_intor
 
 def get_gaussian_info(g, t):
-    if abs(int(t)-t) < 10**-5:
-        t = int(t)
+    '''
+    Extracts the centre, momentum and phase from the provided gaussian. This is relevant as a seamless interface between proper and interpolated timesteps. The function automatically resolves to the correct information retrieval method rby checking if an integer (or a float reasonably close to one) is provided in t or if t is somewhere between timesteps.
+
+    Attributes
+    ----------
+    g : libqdmmg.general.gaussian.Gaussian
+        The gaussian
+    t : int or float
+        The time or timestep.
+
+    Returns
+    -------
+    gw : tuple
+        The width of the Gaussian.
+    gx : tuple
+        The centre of the Gaussian at time(step) t.
+    gp : tuple
+        The momentum of the Gaussian at time(step) t.
+    gg : float
+        The phase of the Gaussian at time(step) t.
+    '''
+    if abs(round(t)-t) < 10**-5:
+        t = int(round(t))
         return tuple(g.width), tuple(g.centre[t]), tuple(g.momentum[t]), g.phase[t]
     gx, gp, gg = g.interpolate(t)
     return tuple(g.width), gx, gp, gg
