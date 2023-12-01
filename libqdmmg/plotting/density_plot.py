@@ -23,7 +23,7 @@ def density_plots(wp, **kwargs):
     
     plt.colorbar(c)
     plt.tight_layout()
-    plt.savefig('./'+name+'.png', bbox_inches='tight', dpi=200)
+    plt.savefig(name+'.png', bbox_inches='tight', dpi=200)
 
 def plot_content(wp, xv, t, desc='amplitude', amp='real'):
     a = wp.evaluate(xv, t)

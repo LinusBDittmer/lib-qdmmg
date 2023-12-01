@@ -27,8 +27,8 @@ class Property:
         if obj is None:
             obj = self.sim.previous_wavefunction
         for t in range(self.sim.tsteps):
-            self.logger.info("Computing Property " + self.descriptor + " at timestep " + str(t))
             self.values[t] = self.compute(obj, t)
+            self.logger.info("Computing Property " + self.descriptor + " at timestep " + str(t) + ". Value = " + str(self.values[t]))
 
     def compute(self, obj, t):
         '''

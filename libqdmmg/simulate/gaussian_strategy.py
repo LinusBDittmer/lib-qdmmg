@@ -90,14 +90,53 @@ class GaussianGridStrategy(GaussianStrategy):
 
 class GaussianSingleRandomStrategy(GaussianStrategy):
 
-    def __init__(self, sim, centre_mu=1.0, centre_sigma=0.3, width_mu=1.0, width_sigma=0.3):
+    def __init__(self, sim, centre_mu=1.0, centre_sigma=0.3, width_mu=1.0, width_sigma=0.3, init_full=True, init_scale=2.5):
         super().__init__(sim)
         self.centre_mu = centre_mu
         self.centre_sigma = centre_sigma
         self.width_mu = width_mu
         self.width_sigma = width_sigma
         self.centres = numpy.zeros((sim.generations, sim.dim))
-        self.generated = [False] * sim.generations
+        #self.generated = [False] * sim.generations
+        if init_full:
+            self.generate_gaussians(init_scale)
+
+    def generate_gaussians(self, init_scale=2.5):
+        hess = self.sim.potential.hessian(numpy.zeros(self.sim.dim))
+        init_width = numpy.sqrt(0.25 * numpy.diag(hess) * self.sim.potential.reduced_mass)
+        init_sigma = 1 / numpy.sqrt(0.5 * init_width)
+        init_pos = numpy.random.normal(loc=0.0, scale=init_scale*init_sigma, size=(self.sim.generations, self.sim.dim))
+        self.centres = self.relax_init_positions(init_pos)
+        self.generated = [True] * self.sim.generations
+
+    def relax_init_positions(self, init_pos, optimum=1.5):
+        self.logger.info("Finding suitable starting positions...")
+        def penalty(x):
+            distp = 0.0
+            if len(x) == 1:
+                return (numpy.linalg.norm(x[0]) - optimum)**2
+            for t1 in range(len(x)-1):
+                for t2 in range(1, len(x)):
+                    distp += (numpy.linalg.norm(x[t1]-x[t2]) - optimum)**2
+            return distp
+        
+        def penaltygrad(x, epsilon=10**-5):
+            grad = numpy.zeros(x.shape)
+            for t1 in range(len(x)):
+                for t2 in range(len(x[0])):
+                    xp, xm = numpy.copy(x), numpy.copy(x)
+                    xp[t1,t2] += epsilon
+                    xm[t1,t2] -= epsilon
+                    grad[t1,t2] = 0.5 * (penalty(xp) - penalty(xm)) / epsilon
+            return grad
+
+        for i in range(500):
+            grad = penaltygrad(init_pos)
+            init_pos -= 0.01 * grad
+            if numpy.linalg.norm(grad) < 0.1:
+                break
+        self.logger.info("Found suitable starting positions.")
+        return init_pos
 
     def new_position(self, generation):
         if self.generated[generation]:

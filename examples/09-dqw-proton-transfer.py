@@ -9,11 +9,13 @@ import libqdmmg.plotting as plot
 import libqdmmg.properties as prop
 import libqdmmg.integrate as intor
 
+numpy.set_printoptions(linewidth=500, precision=5)
+
 dim = 2
 a = 0.255940
 b = 0.028561
 dist = 0.5*(2*b/a)**0.5
-s = sim.Simulation(1000, 20.0, dim=2, verbose=3, generations=25)
+s = sim.Simulation(1000, 20.0, dim=2, verbose=3, generations=3)
 p = pot.DoubleQuadraticWell(s, quartic=a, quadratic=b, shift=numpy.array([dist, dist]), coupling=0*0.005)
 p.reduced_mass = 1836.15 * numpy.ones(dim)
 #p.reduced_mass = numpy.array([1989.0, 1947.0])

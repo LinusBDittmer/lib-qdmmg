@@ -38,7 +38,7 @@ def linear_plots(*prop, **kwargs):
             offset += numpy.prod(numpy.array(prop[index].shape))
 
     plt.tight_layout()
-    plt.savefig('./' + name + '.png', bbox_inches='tight', dpi=200)
+    plt.savefig(name + '.png', bbox_inches='tight', dpi=200)
 
 
 def linear_plot(axs, prop, index, **kwargs):

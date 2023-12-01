@@ -31,8 +31,8 @@ def EOM_Matexp(sim, order=2, auxorder=3):
 def GaussianGridStrategy(sim, gridsize, gridres, prio_size=10):
     return gstrat.GaussianGridStrategy(sim, gridsize, gridres, prio_size)
 
-def GaussianSingleRandomStrategy(sim, centre_mu=1.0, centre_sigma=0.5, width_mu=1.0, width_sigma=0.3):
-    return gstrat.GaussianSingleRandomStrategy(sim, centre_mu, centre_sigma, width_mu, width_sigma)
+def GaussianSingleRandomStrategy(sim, centre_mu=1.0, centre_sigma=0.5, width_mu=1.0, width_sigma=0.3, init_full=True):
+    return gstrat.GaussianSingleRandomStrategy(sim, centre_mu, centre_sigma, width_mu, width_sigma, init_full)
 
 def fs_to_tsteps(fs, tstep_val):
     return int(fs / (0.02418884326 * tstep_val))+1

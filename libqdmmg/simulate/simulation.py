@@ -31,7 +31,7 @@ class Simulation:
         self.eom_master = sim.EOM_Master(self, qcutoff=1.0)
         #self.eom_intor = sim.EOM_AdamsBashforth(self, order=3)
         self.eom_intor = sim.EOM_Matexp(self, order=1, auxorder=3)
-        self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
+        #self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
         self.logger.debug3("Initialised Simulation object at " + str(self))
 
     def bind_potential(self, potential, adapt_strategy=True):
