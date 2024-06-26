@@ -245,11 +245,11 @@ class Wavepacket:
             quality[t] = abs(1j * tprop - eprop)
         return quality
 
-    def reset_coeffs(self):
+    def reset_coeffs(self, dtype=float):
         '''
         This function resets the coefficients and reinitialises the first timestep to be solely the starting Gaussian.
         '''
-        self.gauss_coeff = numpy.zeros(self.gauss_coeff.shape, dtype=float)
+        self.gauss_coeff = numpy.zeros(self.gauss_coeff.shape, dtype=dtype)
         self.gauss_coeff[0,0] = 1 / numpy.sqrt(intor.int_request(self.sim, 'int_ovlp_gg', self.gaussians[0], self.gaussians[0], 0))
 
 if __name__ == '__main__':

@@ -12,13 +12,15 @@ import scipy
 class Autocorrelation(Property):
 
     def __init__(self, sim):
-        super().__init__(sim, "Autocorrelation", dtype=float)
+        super().__init__(sim, "Autocorrelation")
         self.zerotime = sim.previous_wavefunction.zerotime_wp()
 
     def compute(self, obj, t):
         obj = self.wavepacketify(obj)
         a = intor.int_request(self.sim, 'int_ovlp_ww', self.zerotime, obj, t)
-        return ((numpy.conj(a) * a).real)**0.5
+        return a
+        #return abs(a)
+        #return ((numpy.conj(a) * a).real)**0.5
 
 
 class FourierAutocorrelation(Property):

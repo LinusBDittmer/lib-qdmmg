@@ -117,7 +117,7 @@ class AverageDisplacement(Property):
 class Norm(Property):
 
     def __init__(self, sim):
-        super().__init__(sim, "Norm", dtype=float)
+        super().__init__(sim, "Norm")
 
     def compute(self, obj, t):
         obj = self.wavepacketify(obj)

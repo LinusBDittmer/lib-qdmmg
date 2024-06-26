@@ -135,6 +135,11 @@ def int_composite_request(sim, request_string, *args, **kwargs):
     assert argnum >= 3, f"All composite integrals require at least three arguments. Received {argnum}"
     assert isinstance(args[2], int) or isinstance(args[2], float), f"Timestep index must be given as integer in third argument slot. Received {type(args[2])}"
     t = args[2]
+    if t >= sim.tsteps-1:
+        t = float(sim.tsteps-1)
+        a = list(args)
+        a[2] = t
+        args = tuple(a)
 
     if '_gg' in rq or '_gw' in rq:
         assert isinstance(args[0], gen.gaussian.Gaussian), f"For integrals of type -gg or -gw, the first argument must be a Gaussian. Received {type(args[0])}"
@@ -148,11 +153,13 @@ def int_composite_request(sim, request_string, *args, **kwargs):
     g1centre, g1momentum, g1phase, g2centre, g2momentum, g2phase = None, None, 0, None, None, 0
     if abs(t - int(t)) < 10**-5:
         if '_gg' in rq or '_gw' in rq:
+            t = int(t)
             g1 = args[0]
             g1centre = g1.centre[t]
             g1momentum = g1.momentum[t]
             g1phase = g1.phase[t]
         if '_wg' in rq or '_gg' in rq:
+            t = int(t)
             g2 = args[1]
             g2centre = g2.centre[t]
             g2momentum = g2.momentum[t]
@@ -162,6 +169,13 @@ def int_composite_request(sim, request_string, *args, **kwargs):
             g1centre, g1momentum, g1phase = args[0].interpolate(t, returntype='ndarray')
         if '_wg' in rq or '_gg' in rq:
             g2centre, g2momentum, g2phase = args[1].interpolate(t, returntype='ndarray')
+            if 'dovlp' in rq:
+                epsilon = max(10**-5, sim.tstep_val * 10**-3)
+                g2centre1, g2momentum1, g2phase1 = args[1].interpolate(t-epsilon, returntype='ndarray')
+                g2centre2, g2momentum2, g2phase2 = args[1].interpolate(t+epsilon, returntype='ndarray')
+                g2_dcentre = 0.5 * (g2centre2 - g2centre1) / epsilon
+                g2_dmomentum = 0.5 * (g2momentum2 - g2momentum1) / epsilon
+                g2_dphase = 0.5 * (g2phase2 - g2phase1) / epsilon
 
 
     if rq == 'int_ovlp_gg':
@@ -173,19 +187,19 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         int_gg_tensor = numpy.zeros(coeffs.shape, dtype=numpy.complex128)
         for i in range(len(coeffs)):
             int_gg_tensor[i] = int_atom_request('int_gg', wp.gaussians[i], g, t)
-        return numpy.dot(coeffs, int_gg_tensor)
+        return numpy.dot(coeffs.conj(), int_gg_tensor)
     elif rq == 'int_ovlp_gw':
         return int_composite_request(sim, 'int_ovlp_wg', args[1], args[0], t, **kwargs).conj()
     elif rq == 'int_ovlp_ww':
         wp1 = args[0]
         wp2 = args[1]
-        coeffs1 = wp1.get_coeffs(t)
-        coeffs2 = wp2.get_coeffs(t)
+        coeffs1 = wp1.get_coeffs(int(t))
+        coeffs2 = wp2.get_coeffs(int(t))
         int_gg_tensor = numpy.zeros((len(coeffs1), len(coeffs2)), dtype=numpy.complex128)
         for i in range(len(coeffs1)):
             for j in range(len(coeffs2)):
                 int_gg_tensor[i,j] = int_atom_request('int_gg', wp1.gaussians[i], wp2.gaussians[j], t)
-        return numpy.einsum('i,ij,j', coeffs1, int_gg_tensor, coeffs2)
+        return numpy.einsum('i,ij,j', coeffs1.conj(), int_gg_tensor, coeffs2)
     elif rq == 'int_dovlp_gg':
         g1 = args[0]
         g2 = args[1]
@@ -194,23 +208,23 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         for i in range(sim.dim):
             gxg[i] = int_atom_request('int_gxg', g1, g2, t, i)
         dovlp_vec1 = gxg - g2centre * gg
-        dovlp1 = 2 * numpy.dot(g2.width*g2.d_centre[int(t)], dovlp_vec1)
-        dovlp2 = numpy.dot(g2.d_momentum[int(t)], gxg)
-        return dovlp1 + 1j*(dovlp2 + g2.d_phase[int(t)]*gg)
+        dovlp1 = 2 * numpy.dot(g2.width*g2_dcentre, dovlp_vec1)
+        dovlp2 = numpy.dot(g2_dmomentum, gxg)
+        return dovlp1 + 1j*(dovlp2 + g2_dphase*gg)
     elif rq == 'int_dovlp_wg':
         wp = args[0]
         g1 = args[1]
-        coeffs = wp.get_coeffs(t)
+        coeffs = wp.get_coeffs(int(t))
         int_val = 0.0
         for i in range(len(coeffs)):
-            int_val += coeffs[i]*int_composite_request(sim, 'int_dovlp_gg', wp.gaussians[i], g1, t)
+            int_val += numpy.conj(coeffs[i])*int_composite_request(sim, 'int_dovlp_gg', wp.gaussians[i], g1, t)
         return int_val
     elif rq == 'int_dovlp_gw':
         g1 = args[0]
         wp = args[1]
-        coeffs = wp.get_coeffs(t)
+        coeffs = wp.get_coeffs(int(t))
         coeffs_t = numpy.copy(coeffs)
-        d_coeffs = wp.get_d_coeffs(t)
+        d_coeffs = wp.get_d_coeffs(int(t))
         int_val = 0.0
         for i in range(len(coeffs)):
             int_val += d_coeffs[i] * int_atom_request('int_gg', g1, wp.gaussians[i], t) + coeffs[i] * int_composite_request(sim, 'int_dovlp_gg', g1, wp.gaussians[i], t)
@@ -221,7 +235,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         coeffs = wp1.get_coeffs(t)
         int_val = 0.0
         for i in range(len(coeffs)):
-            int_val += coeffs[i] * int_composite_request(sim, 'int_dovlp_gw', wp1.gaussians[i], wp2, t)
+            int_val += numpy.conj(coeffs[i]) * int_composite_request(sim, 'int_dovlp_gw', wp1.gaussians[i], wp2, t)
         return int_val
     elif rq == 'int_kinetic_gg':
         g1, g2 = args[0], args[1]
@@ -243,7 +257,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         kin_gauss = numpy.zeros(coeffs.shape, dtype=numpy.complex128)
         for i in range(len(coeffs)):
             kin_gauss[i] = int_composite_request(sim, 'int_kinetic_gg', wp.gaussians[i], g1, t)
-        return numpy.dot(coeffs, kin_gauss)
+        return numpy.dot(coeffs.conj(), kin_gauss)
     elif rq == 'int_kinetic_gw':
         g1, wp = args[0], args[1]
         coeffs = wp.get_coeffs(t)
@@ -259,7 +273,7 @@ def int_composite_request(sim, request_string, *args, **kwargs):
         for i in range(len(coeffs1)):
             for j in range(len(coeffs2)):
                 kin_gauss[i,j] = int_composite_request(sim, 'int_kinetic_gg', wp1.gaussians[i], wp2.gaussians[j], t)
-        return numpy.einsum('i,ij,j', coeffs1, kin_gauss, coeffs2)
+        return numpy.einsum('i,ij,j', coeffs1.conj(), kin_gauss, coeffs2)
     else:
         raise gen.IIRSException(rq, "comp")
 

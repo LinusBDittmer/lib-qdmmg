@@ -14,7 +14,7 @@ import numpy
 
 class Simulation:
 
-    def __init__(self, tsteps, tstep_val, verbose=0, dim=1, generations=0):
+    def __init__(self, tsteps, tstep_val, verbose=0, dim=1, generations=0, qcutoff=0.1, micro_steps=4):
         self.verbose = verbose
         self.dim = dim
         self.tsteps = tsteps
@@ -28,13 +28,11 @@ class Simulation:
         self.d_active_coeffs = None
         self.active_gaussian = None
         self.potential = None
-        self.eom_master = sim.EOM_Master(self, qcutoff=1.0)
-        #self.eom_intor = sim.EOM_AdamsBashforth(self, order=3)
-        self.eom_intor = sim.EOM_Matexp(self, order=1, auxorder=3)
-        #self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
+        self.eom_master = sim.EOM_Master(self, qcutoff=qcutoff)
+        self.eom_intor = sim.EOM_Matexp(self, order=1, auxorder=3, micro_steps=micro_steps)
         self.logger.debug3("Initialised Simulation object at " + str(self))
 
-    def bind_potential(self, potential, adapt_strategy=True):
+    def bind_potential(self, potential, adapt_strategy=True, strategy_kwargs=None):
         self.logger.debug2("Binding Potential...")
         assert isinstance(potential, pot.potential.Potential), f"Expected Object of type or inheriting libqdmmg.potential.potential.Potential, received {type(potential)}"
         self.potential = potential
@@ -42,7 +40,12 @@ class Simulation:
             # TODO add molecular strategy
             self.gaussian_strategy = sim.GaussianSingleRandomStrategy(self)
         else:
-            self.gaussian_strategy = sim.GaussianGridStrategy(self, 10.0, 750)
+            if strategy_kwargs is None:
+                strategy_kwargs = {}
+            strategy_kwargs.setdefault("extent", numpy.ones(self.dim) * 10.0)
+            strategy_kwargs.setdefault("res", numpy.ones(self.dim))
+            strategy_kwargs.setdefault("shift", numpy.zeros(self.dim))
+            self.gaussian_strategy = sim.GaussianGridStrategy(self, strategy_kwargs["extent"], strategy_kwargs["res"], strategy_kwargs["shift"])
             self.logger.debug2("Changed Gaussian Strategy to Gaussian Grid Strategy")
         self.logger.info("Bound potential to simulation, type: " + str(type(potential)) + ", content: " + str(potential))
 
@@ -156,13 +159,15 @@ class Simulation:
         self.redo_coefficients()
 
     def redo_coefficients(self):
-        self.previous_wavefunction.reset_coeffs()
+        self.previous_wavefunction.reset_coeffs(dtype=numpy.complex128)
         for t in range(self.tsteps-1):
             ncoeffs = self.eom_intor.renew_coefficients(self.previous_wavefunction.gaussians, self.previous_wavefunction.get_coeffs(t), t)
             self.previous_wavefunction.gauss_coeff[:,t+1] = ncoeffs
-            norm = abs(intor.int_request(self, 'int_ovlp_ww', self.previous_wavefunction, self.previous_wavefunction, t+1))
+            norm = intor.int_request(self, 'int_ovlp_ww', self.previous_wavefunction, self.previous_wavefunction, t+1)
             self.logger.info(f"Wavepacket Norm before Normalisation: {norm}")
             self.previous_wavefunction.gauss_coeff[:,t+1] /= numpy.sqrt(norm)
+            norm = abs(intor.int_request(self, 'int_ovlp_ww', self.previous_wavefunction, self.previous_wavefunction, t+1))
+            self.logger.info(f"Wavepacket Norm after Normalisation: {norm}")
             self.logger.info(f"Updated Coefficients: {self.previous_wavefunction.get_coeffs(t)}")
 
     def get_wavefunction(self):

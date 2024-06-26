@@ -1,0 +1,4 @@
+/export/home/ldittmer/miniconda3/envs/lib-qdmmg/lib/python3.11/site-packages/pyscf/dft/libxc.py:772: UserWarning: Since PySCF-2.3, B3LYP (and B3P86) are changed to the VWN-RPA variant, the same to the B3LYP functional in Gaussian and ORCA (issue 1480). To restore the VWN5 definition, you can put the setting "B3LYP_WITH_VWN5 = True" in pyscf_conf.py
+  warnings.warn('Since PySCF-2.3, B3LYP (and B3P86) are changed to the VWN-RPA variant, '
+/var/lib/slurm/slurmd/job34723/slurm_script: Zeile 40: 23964 Getötet                python $PYEXEC > $PYEXEC.out
+slurmstepd-Knecht03: error: Detected 1 oom-kill event(s) in StepId=34723.batch cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.

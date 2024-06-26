@@ -31,10 +31,11 @@ class GaussianStrategy:
 
 class GaussianGridStrategy(GaussianStrategy):
 
-    def __init__(self, sim, gridsize, gridres, prio_size=10):
+    def __init__(self, sim, gridsize, gridres, gridshift, prio_size=10):
         super().__init__(sim)
-        self.gridsize = gridsize
-        self.gridres = gridres
+        self.gridsize = numpy.array(gridsize, dtype=float)
+        self.gridshift = numpy.array(gridshift, dtype=float)
+        self.gridres = numpy.array(gridres, dtype=int)
         self.prio_size = sim.generations+1
         self.cellsize = 2 * gridsize / gridres
         self.widths = numpy.zeros((self.sim.generations, self.sim.dim))
@@ -45,7 +46,7 @@ class GaussianGridStrategy(GaussianStrategy):
         self.logger.debug2("Finished Initialising Grid")
 
     def init_grid(self):
-        energies = numpy.zeros(self.gridres**self.sim.dim)
+        energies = numpy.zeros(numpy.prod(self.gridres))
         for i in range(len(energies)):
             p = self.gridpoint(i)
             if numpy.allclose(p, numpy.zeros(p.shape)):
@@ -82,10 +83,18 @@ class GaussianGridStrategy(GaussianStrategy):
         return self.centres[generation]
 
     def gridpoint(self, i):
-        index = numpy.zeros(self.sim.dim)
-        for j in range(self.sim.dim):
-            index[j] = int((i % self.gridres**(j+1)) / self.gridres**j)
-        return index * self.cellsize - 0.5 * self.gridsize
+        index = []
+        for j in range(self.sim.dim-1, 0, -1):
+            axis_size = self.gridres[j]
+            axis_index = i % axis_size
+            index.insert(0, axis_index)
+            i = i // axis_size
+        index.insert(0, i)
+        index = numpy.array(index)
+
+        #for j in range(self.sim.dim):
+        #    index[j] = int((i % self.gridres**(j+1)) / self.gridres**j)
+        return index * self.cellsize - 0.5 * self.gridsize + self.gridshift
 
 
 class GaussianSingleRandomStrategy(GaussianStrategy):

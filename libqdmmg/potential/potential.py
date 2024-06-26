@@ -178,6 +178,11 @@ class PotentialIntegrator:
 
         assert argnum >= 3, f"Expected at least 3 arguments (g1, g2, t). Received {argnum}."
 
+        if args[2] >= self.potential.sim.tsteps-1:
+            a = list(args)
+            a[2] = float(self.potential.sim.tsteps-1)
+            args = tuple(a)
+
         if rq == 'int_gvg':
             return self._int_gVg(*args)
         elif rq == 'int_uvg':
@@ -253,7 +258,8 @@ class PotentialIntegrator:
         '''
         sim = self.potential.sim
         if r_taylor is None:
-            r_taylor = (g1.width * g1.centre[t] + g2.width * g2.centre[t]) / (g1.width + g2.width)
+            tt = int(t)
+            r_taylor = (g1.width * g1.centre[tt] + g2.width * g2.centre[tt]) / (g1.width + g2.width)
         v_const = self.potential.evaluate(r_taylor)
         grad = self.potential.gradient(r_taylor)
         hess = self.potential.hessian(r_taylor)
@@ -267,6 +273,7 @@ class PotentialIntegrator:
                 gx2g[i,j] = intor.int_request(sim, 'int_gx2g', g1, g2, t, i, j, m=gg, useM=True)
         v1 = gxg - gg * r_taylor
         v2 = gx2g - numpy.einsum('k,m->mk', r_taylor, gxg) - numpy.einsum('m,k->mk', r_taylor, gxg) + numpy.einsum('m,k->mk', r_taylor, r_taylor) * gg
+
         return self._clean(v0 + numpy.dot(grad, v1) + 0.5 * numpy.einsum('ij,ji->', hess, v2))
 
     def _int_uVg(self, g1, g2, t, r_taylor=None):

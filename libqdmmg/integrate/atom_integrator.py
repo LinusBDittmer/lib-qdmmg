@@ -47,8 +47,10 @@ def int_gg(g1width, g2width, g1centre, g2centre, g1momentum, g2momentum, g1phase
     g2momentum = numpy.array(g2momentum)
     cvec = g1width + g2width
     cvec_inv = 1 / cvec
-    vvec = 2 * reduce(numpy.multiply, (g1width, g1centre)) + 2 * reduce(numpy.multiply, (g2width, g2centre)) + 1j*(g2momentum - g1momentum)
-    vvec2 = reduce(numpy.multiply, (vvec, vvec))
+    vvec = 2 * g1width * g1centre + 2 * g2width * g2centre + 1j * (g2momentum - g1momentum)
+    vvec2 = vvec*vvec
+    #vvec = 2 * reduce(numpy.multiply, (g1width, g1centre)) + 2 * reduce(numpy.multiply, (g2width, g2centre)) + 1j*(g2momentum - g1momentum)
+    #vvec2 = reduce(numpy.multiply, (vvec, vvec))
 
     c1 = -reduce(numpy.dot, (g1width, g1centre*g1centre)) - reduce(numpy.dot, (g2width, g2centre*g2centre)) + 1j*(g2phase - g1phase) 
     c2 = 0.25 * reduce(numpy.dot, (cvec_inv, vvec2))

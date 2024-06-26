@@ -303,6 +303,10 @@ class Gaussian:
             The type of returned object. If "tuple" is given, centre and momentum are returned as tuple, otherwise as ndarray. Default "tuple"
         '''
         t0 = int(ti)
+        if t0 >= len(self.centre)-1:
+            if returntype == 'tuple':
+                return tuple(self.centre[-1]), tuple(self.momentum[-1]), self.phase[-1]
+            return self.centre[-1], self.momentum[-1], self.phase[-1]
         t1 = t0+1
         t2 = t0+2
         dt = ti - t0
